@@ -456,14 +456,35 @@ async function initializeDatabase(): Promise<void> {
 
     logger.info({ msg: 'DB tables initialized' });
 
-    // Default admin
+    // Bootstrap: default company + super-admin (idempotent)
     const adminEmail = 'admin@portal.com';
     const adminPass = 'admin123';
-    const existingAdmin: QueryResult = await pool.query('SELECT id FROM users WHERE email = $1', [adminEmail]);
-    if (existingAdmin.rows.length === 0) {
-      const hashed = await bcrypt.hash(adminPass, 10);
-      await pool.query('INSERT INTO users (email, password_hash, username) VALUES ($1, $2, $3)', [adminEmail, hashed, 'admin']);
-      logger.info({ msg: 'Default admin created', email: 'admin@portal.com' });
+    const companyRes: QueryResult = await pool.query('SELECT id FROM companies LIMIT 1');
+    let companyId: string;
+    if (companyRes.rows.length === 0) {
+      const created: QueryResult = await pool.query(
+        "INSERT INTO companies (name) VALUES ('AI Portal') RETURNING id",
+      );
+      companyId = created.rows[0].id;
+      logger.info({ msg: 'Default company created', companyId });
+    } else {
+      companyId = companyRes.rows[0].id;
+    }
+    const adminRes: QueryResult = await pool.query(
+      'SELECT id FROM rbac_users WHERE company_id = $1 AND email = $2',
+      [companyId, adminEmail],
+    );
+    if (adminRes.rows.length === 0) {
+      const hashed = await bcrypt.hash(adminPass, 12);
+      const u: QueryResult = await pool.query(
+        'INSERT INTO rbac_users (company_id, email, password_hash, full_name) VALUES ($1, $2, $3, $4) RETURNING id',
+        [companyId, adminEmail, hashed, 'Administrator'],
+      );
+      await pool.query(
+        "INSERT INTO company_roles (user_id, company_id, role) VALUES ($1, $2, 'super_admin')",
+        [u.rows[0].id, companyId],
+      );
+      logger.info({ msg: 'Default super-admin created', email: adminEmail });
     }
 
     // MeiliSearch index - only when real MeiliSearch is configured
