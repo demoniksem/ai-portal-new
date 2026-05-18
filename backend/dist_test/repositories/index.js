@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BoardsRepository = exports.CardsRepository = exports.NotificationsRepository = exports.CommentsRepository = exports.PageVersionsRepository = exports.PagesRepository = exports.SpacesRepository = exports.UsersRepository = void 0;
+var users_1 = require("./users");
+Object.defineProperty(exports, "UsersRepository", { enumerable: true, get: function () { return users_1.UsersRepository; } });
+var spaces_1 = require("./spaces");
+Object.defineProperty(exports, "SpacesRepository", { enumerable: true, get: function () { return spaces_1.SpacesRepository; } });
+var pages_1 = require("./pages");
+Object.defineProperty(exports, "PagesRepository", { enumerable: true, get: function () { return pages_1.PagesRepository; } });
+var pageVersions_1 = require("./pageVersions");
+Object.defineProperty(exports, "PageVersionsRepository", { enumerable: true, get: function () { return pageVersions_1.PageVersionsRepository; } });
+var comments_1 = require("./comments");
+Object.defineProperty(exports, "CommentsRepository", { enumerable: true, get: function () { return comments_1.CommentsRepository; } });
+var notifications_1 = require("./notifications");
+Object.defineProperty(exports, "NotificationsRepository", { enumerable: true, get: function () { return notifications_1.NotificationsRepository; } });
+var cards_1 = require("./cards");
+Object.defineProperty(exports, "CardsRepository", { enumerable: true, get: function () { return cards_1.CardsRepository; } });
+var boards_1 = require("./boards");
+Object.defineProperty(exports, "BoardsRepository", { enumerable: true, get: function () { return boards_1.BoardsRepository; } });
+//# sourceMappingURL=index.js.map

@@ -1,0 +1,128 @@
+.addColumnBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+  min-height: 44px;
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.addColumnBtn:hover {
+  border-color: var(--color-focus);
+  color: var(--color-focus);
+  background: var(--color-focus-alpha);
+}
+
+.addColumnForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  width: 220px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-md);
+}
+
+.titleInput {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.titleInput:focus {
+  border-color: var(--color-focus);
+}
+
+.titleInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.wipInput {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: border-color 0.15s;
+  /* Hide number spinners */
+  -moz-appearance: textfield;
+}
+
+.wipInput::-webkit-outer-spin-button,
+.wipInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.wipInput:focus {
+  border-color: var(--color-focus);
+}
+
+.wipInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.confirmBtn {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-focus);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.confirmBtn:hover {
+  opacity: 0.85;
+}
+
+.cancelBtn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cancelBtn:hover {
+  background: var(--color-surface-overlay);
+  color: var(--color-text-primary);
+}

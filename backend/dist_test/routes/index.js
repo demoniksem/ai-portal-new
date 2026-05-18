@@ -1,0 +1,35 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.aiConfigRouter = exports.homeRouter = exports.cardsRouter = exports.boardsRouter = exports.adminRouter = exports.healthRouter = exports.integrationsRouter = exports.notificationsRouter = exports.aiSettingsRouter = exports.aiRouter = exports.searchRouter = exports.pagesRouter = exports.spacesRouter = exports.authRouter = void 0;
+const auth_1 = __importDefault(require("./auth"));
+exports.authRouter = auth_1.default;
+const spaces_1 = __importDefault(require("./spaces"));
+exports.spacesRouter = spaces_1.default;
+const pages_1 = __importDefault(require("./pages"));
+exports.pagesRouter = pages_1.default;
+const search_1 = __importDefault(require("./search"));
+exports.searchRouter = search_1.default;
+const ai_1 = __importDefault(require("./ai"));
+exports.aiRouter = ai_1.default;
+const aiSettings_1 = __importDefault(require("./aiSettings"));
+exports.aiSettingsRouter = aiSettings_1.default;
+const notifications_1 = __importDefault(require("./notifications"));
+exports.notificationsRouter = notifications_1.default;
+const integrations_1 = __importDefault(require("./integrations"));
+exports.integrationsRouter = integrations_1.default;
+const health_1 = __importDefault(require("./health"));
+exports.healthRouter = health_1.default;
+const admin_1 = __importDefault(require("./admin"));
+exports.adminRouter = admin_1.default;
+const boards_1 = __importDefault(require("./boards"));
+exports.boardsRouter = boards_1.default;
+const cards_1 = __importDefault(require("./cards"));
+exports.cardsRouter = cards_1.default;
+const home_1 = __importDefault(require("./home"));
+exports.homeRouter = home_1.default;
+const aiConfig_1 = __importDefault(require("./aiConfig"));
+exports.aiConfigRouter = aiConfig_1.default;
+//# sourceMappingURL=index.js.map

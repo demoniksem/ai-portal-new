@@ -1,0 +1,21 @@
+# Local-only override (NOT pushed to the repo). This host already runs unrelated
+# containers (`formula_*`) on ports 5432 and 3000, and on this host the backend's
+# host-port publish does not activate while it is attached to two networks — so:
+#  - drop the postgres host-port publish (reached over the internal network);
+#  - move the frontend host port to 8080 (open the portal at http://localhost:8080);
+#  - put every service on a single network so the backend port publishes.
+# The repo's docker-compose.yml keeps the standard two-network / 5432 / 3000 setup.
+services:
+  postgres:
+    ports: !override []
+    networks: !override [backend-network]
+  redis:
+    networks: !override [backend-network]
+  meilisearch:
+    networks: !override [backend-network]
+  backend:
+    ports: !override ["8081:3001"]
+    networks: !override [backend-network]
+  frontend:
+    ports: !override ["8080:3000"]
+    networks: !override [backend-network]

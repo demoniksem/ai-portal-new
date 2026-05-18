@@ -1,0 +1,186 @@
+/* Button Component — CSS Module */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.btn:disabled,
+.btn--loading {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ── Sizes ─────────────────────── */
+
+.btn--sm {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  height: 30px;
+  gap: var(--space-1);
+}
+
+.btn--md {
+  font-size: var(--text-sm);
+  padding: var(--space-2) var(--space-4);
+  height: 36px;
+}
+
+.btn--lg {
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-6);
+  height: 44px;
+}
+
+/* ── Variants ─────────────────── */
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.35);
+}
+.btn--primary:active:not(:disabled) {
+  background: var(--color-primary-active);
+  border-color: var(--color-primary-active);
+}
+
+.btn--secondary {
+  background: var(--color-secondary);
+  color: #fff;
+  border-color: var(--color-secondary);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: var(--color-secondary-hover);
+  border-color: var(--color-secondary-hover);
+  box-shadow: 0 4px 12px rgba(var(--color-secondary-rgb), 0.35);
+}
+.btn--secondary:active:not(:disabled) {
+  background: var(--color-secondary-active);
+}
+
+.btn--outline {
+  background: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.btn--outline:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+.btn--outline:active:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: transparent;
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+.btn--ghost:active:not(:disabled) {
+  background: var(--color-border);
+}
+
+.btn--danger {
+  background: var(--color-error);
+  color: #fff;
+  border-color: var(--color-error);
+}
+.btn--danger:hover:not(:disabled) {
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+.btn--danger:active:not(:disabled) {
+  background: var(--color-error-active);
+}
+
+.btn--success {
+  background: var(--color-success);
+  color: #fff;
+  border-color: var(--color-success);
+}
+.btn--success:hover:not(:disabled) {
+  background: var(--color-success-hover);
+  border-color: var(--color-success-hover);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.35);
+}
+.btn--success:active:not(:disabled) {
+  background: var(--color-success-active);
+}
+
+/* ── Full width ────────────────── */
+
+.btn--full {
+  width: 100%;
+}
+
+/* ── Icon ─────────────────────── */
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* ── Spinner ──────────────────── */
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Label ────────────────────── */
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}

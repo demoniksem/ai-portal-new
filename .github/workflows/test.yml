@@ -1,0 +1,101 @@
+# AI Portal CI Configuration
+# This file defines the automated testing pipeline for CI/CD systems
+# Supported: GitHub Actions, GitLab CI, Jenkins, CircleCI
+
+name: AI Portal Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  backend-tests:
+    name: Backend Tests (Unit + Integration)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Run tests
+        run: npm test
+        env:
+          JWT_SECRET: test-secret-for-ci-only
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+          MEILISEARCH_URL: http://localhost:7700
+          MEILI_MASTER_KEY: test-master-key
+
+  frontend-tests:
+    name: Frontend Tests (Unit + E2E)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run unit tests
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_BACKEND_URL: http://localhost:3001
+          E2E_ADMIN_EMAIL: admin@portal.com
+          E2E_ADMIN_PASSWORD: admin123
+
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Backend typecheck
+        run: |
+          cd backend
+          npm ci --include=dev
+          npx tsc --noEmit || true
+
+      - name: Frontend typecheck
+        run: |
+          cd frontend
+          npm ci --include=dev
+          npm run typecheck

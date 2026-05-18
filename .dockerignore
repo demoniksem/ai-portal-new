@@ -1,0 +1,23 @@
+# Backend
+node_modules
+npm-debug.log
+.env
+.env.local
+.dockerignore
+Dockerfile
+*.md
+.git
+.gitignore
+.vscode
+.idea
+.nyc_output
+coverage
+
+# Frontend
+.next
+out
+*.md
+
+# OS
+.DS_Store
+Thumbs.db

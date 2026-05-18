@@ -1,0 +1,75 @@
+/* KanbanBoard — CSS Module */
+
+.board {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-4);
+}
+
+/* ── Flat board (columns only) ──────── */
+
+.board--flat {
+  height: 100%;
+}
+
+.columns {
+  display: flex;
+  gap: var(--kanban-column-gap);
+  align-items: flex-start;
+  min-width: min-content;
+  height: 100%;
+}
+
+/* ── Swimlane board ────────────────── */
+
+.board--swimlanes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Swimlane header row ──────────── */
+
+.swimlaneHeader {
+  display: grid;
+  grid-template-columns: 160px repeat(6, var(--kanban-column-width));
+  gap: var(--kanban-column-gap);
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-2);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-raised);
+  background: var(--color-background);
+}
+
+.swimlaneLabelCell {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.swimlaneColHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  position: sticky;
+  top: 0;
+}
+
+.swimlaneColTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.wipBadge {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-hover);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}

@@ -1,0 +1,108 @@
+/* KanbanSwimlane — CSS Module */
+
+.swimlane {
+  display: grid;
+  grid-template-columns: 160px repeat(6, var(--kanban-column-width));
+  gap: var(--kanban-column-gap);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  align-items: start;
+}
+
+.swimlane:last-child {
+  border-bottom: none;
+}
+
+/* ── Lane label ────────────────────── */
+
+.laneLabel {
+  width: 160px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  position: sticky;
+  left: 0;
+  background: var(--color-background);
+  z-index: 1;
+}
+
+.laneTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.laneCount {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ── Lane columns ─────────────────── */
+
+.laneColumns {
+  display: contents;
+}
+
+.laneCell {
+  min-height: 80px;
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1);
+}
+
+.laneCell--drag-over {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* ── Mini card (swimlane cell) ────── */
+
+.miniCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.miniCardTitle {
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.miniCardAssignee {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.moreCards {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  padding: var(--space-1);
+  text-align: center;
+}
+
+.cellEmpty {
+  flex: 1;
+  min-height: 60px;
+}

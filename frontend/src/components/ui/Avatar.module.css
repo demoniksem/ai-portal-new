@@ -1,0 +1,28 @@
+/* Avatar Component — CSS Module */
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  object-fit: cover;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-semibold);
+  user-select: none;
+}
+
+/* ── Sizes ──────────────────── */
+
+.avatar--xs { width: 20px; height: 20px; font-size: 9px; }
+.avatar--sm { width: 28px; height: 28px; font-size: 11px; }
+.avatar--md { width: 36px; height: 36px; font-size: 13px; }
+.avatar--lg { width: 48px; height: 48px; font-size: 17px; }
+.avatar--xl { width: 64px; height: 64px; font-size: 22px; }
+
+/* ── Initials ───────────────── */
+
+.initials {
+  letter-spacing: 0.5px;
+}
