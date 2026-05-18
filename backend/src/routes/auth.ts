@@ -6,6 +6,15 @@ import { authLimiter } from '../middleware';
 import { registerSchema, loginSchema } from '../schemas';
 import { validate } from '../middleware/validation';
 import { authMiddleware } from '../middleware/rbac';
+import { pool } from '../config';
+
+// When the client omits companyId, fall back to the single company
+// (single-tenant deploy). Returns null if 0 or >1 companies exist.
+async function resolveCompanyId(companyId?: string): Promise<string | null> {
+  if (companyId) return companyId;
+  const r = await pool.query('SELECT id FROM companies');
+  return r.rows.length === 1 ? r.rows[0].id : null;
+}
 
 const router: Router = Router();
 const authService = new AuthService();
@@ -32,10 +41,11 @@ interface LoginBody {
 // POST /api/auth/register
 router.post('/register', authLimiter, validate(registerSchema), async (req: Request, res: Response) => {
   try {
-    const { email, password, companyId, fullName, username } = req.body as unknown as RegisterBody;
+    const { email, password, fullName, username } = req.body as unknown as RegisterBody;
 
+    const companyId = await resolveCompanyId(req.body.companyId);
     if (!companyId) {
-      return res.status(400).json({ error: 'companyId is required' });
+      return res.status(400).json({ error: 'companyId is required (multiple companies exist)' });
     }
 
     const result = await authService.register({ email, password, companyId, fullName, username });
@@ -62,10 +72,11 @@ router.post('/register', authLimiter, validate(registerSchema), async (req: Requ
 // POST /api/auth/login
 router.post('/login', authLimiter, validate(loginSchema), async (req: Request, res: Response) => {
   try {
-    const { email, password, companyId } = req.body as unknown as LoginBody;
+    const { email, password } = req.body as unknown as LoginBody;
 
+    const companyId = await resolveCompanyId(req.body.companyId);
     if (!companyId) {
-      return res.status(400).json({ error: 'companyId is required' });
+      return res.status(400).json({ error: 'companyId is required (multiple companies exist)' });
     }
 
     const result = await authService.login({ email, password, companyId });
