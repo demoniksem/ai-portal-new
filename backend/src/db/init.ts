@@ -44,6 +44,7 @@ async function initializeDatabase(): Promise<void> {
         email VARCHAR(255) NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
         full_name VARCHAR(255),
+        username VARCHAR(100),
         avatar_url TEXT,
         is_active BOOLEAN NOT NULL DEFAULT TRUE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
