@@ -12,6 +12,7 @@ import boardsRouter from './boards';
 import cardsRouter from './cards';
 import homeRouter from './home';
 import aiConfigRouter from './aiConfig';
+import departmentsRouter from './departments';
 
 export {
   authRouter,
@@ -28,4 +29,5 @@ export {
   cardsRouter,
   homeRouter,
   aiConfigRouter,
+  departmentsRouter,
 };

@@ -21,6 +21,7 @@ import {
   cardsRouter,
   homeRouter,
   aiConfigRouter,
+  departmentsRouter,
 } from './routes';
 import { initializeDatabase } from './db/init';
 
@@ -53,6 +54,7 @@ app.use('/api/integrations', integrationsRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/boards', boardsRouter);
 app.use('/api/cards', cardsRouter);
+app.use('/api/departments', departmentsRouter);
 app.use('/api/home', homeRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/ai-config', aiConfigRouter);

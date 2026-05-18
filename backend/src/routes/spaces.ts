@@ -26,7 +26,11 @@ const getSpacesHandler: RequestHandler = async (req, res) => {
 // POST /api/spaces
 const createSpaceHandler: RequestHandler = async (req, res) => {
   try {
-    const { name, slug } = req.body as unknown as CreateSpaceBody;
+    const { name } = req.body as unknown as CreateSpaceBody;
+    const slug =
+      (req.body.slug as string | undefined) ||
+      name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 100) ||
+      'space';
     const userId = (req as unknown as { user: { id: number } }).user.id;
     const result = await spacesService.createSpace({ name, slug }, userId);
 
