@@ -22,6 +22,7 @@ import {
   homeRouter,
   aiConfigRouter,
 } from './routes';
+import { initializeDatabase } from './db/init';
 
 const app: Express = express();
 
@@ -38,69 +39,7 @@ const uploadsDir = path.join(__dirname, '../../uploads');
 app.use('/api/uploads', express.static(uploadsDir));
 
 // ==================== DATABASE INIT ====================
-(async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        username VARCHAR(100),
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      CREATE TABLE IF NOT EXISTS spaces (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        slug VARCHAR(255) UNIQUE NOT NULL,
-        created_by INT REFERENCES users(id),
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      CREATE TABLE IF NOT EXISTS pages (
-        id SERIAL PRIMARY KEY,
-        space_id INT REFERENCES spaces(id),
-        title VARCHAR(255) NOT NULL,
-        content JSONB NOT NULL DEFAULT '{}',
-        acl JSONB NOT NULL DEFAULT '{}',
-        created_by INT REFERENCES users(id),
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      CREATE TABLE IF NOT EXISTS ai_settings (
-        id SERIAL PRIMARY KEY,
-        user_id INT UNIQUE REFERENCES users(id),
-        provider VARCHAR(50) NOT NULL DEFAULT 'openrouter',
-        api_key TEXT,
-        model VARCHAR(255) NOT NULL DEFAULT 'qwen/qwen3.6-plus:free',
-        temperature DECIMAL(3,2) NOT NULL DEFAULT 0.70,
-        max_tokens INT NOT NULL DEFAULT 4000,
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-    logger.info({ msg: 'DB tables initialized' });
-
-    // NOTE: No default admin is created. The first user to register should be
-    // granted Super Admin role via an out-of-band bootstrap process or environment
-    // variable (e.g., INITIAL_ADMIN_EMAIL). Static default credentials are prohibited
-    // per SPEC section 6.11.
-
-    // MeiliSearch index setup
-    try {
-      const indexes = await meiliClient.getIndexes();
-      const hasPagesIndex = indexes.results?.some(idx => idx.uid === 'pages');
-      if (!hasPagesIndex) {
-        await meiliClient.createIndex('pages', { primaryKey: 'id' });
-        await meiliClient.index('pages').updateSearchableAttributes(['title', 'content']);
-        logger.info({ msg: 'MeiliSearch index "pages" created' });
-      }
-    } catch (e) {
-      const err = e as Error;
-      logger.warn({ msg: 'MeiliSearch index setup note', error: err.message });
-    }
-
-  } catch (e) {
-    const err = e as Error;
-    logger.error({ msg: 'DB init error', error: err.message });
-  }
-})();
+void initializeDatabase();
 
 // ==================== ROUTES ====================
 app.use('/api/auth', authRouter);
