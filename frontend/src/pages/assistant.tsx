@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, FormEvent, KeyboardEvent } fr
 import Link from 'next/link';
 import styles from '@/styles/Assistant.module.css';
 
-const API_BASE = 'http://localhost:8081';
+const API_BASE = 'http://localhost:3001';
 
 interface Message {
   id: string;

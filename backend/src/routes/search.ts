@@ -1,7 +1,7 @@
 import { Router, RequestHandler } from 'express';
 import { logger } from '../config/logger';
 import { SearchService } from '../services/searchService';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware } from '../middleware/rbac';
 import { validateQuery, querySchemas } from '../middleware/validation';
 
 const searchService = new SearchService();

@@ -117,7 +117,7 @@ async function initializeDatabase(): Promise<void> {
       -- Boards
       CREATE TABLE IF NOT EXISTS boards (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        space_id UUID NOT NULL,
+        space_id INTEGER NOT NULL,
         department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
         name VARCHAR(255) NOT NULL,
         description TEXT,
@@ -338,16 +338,17 @@ async function initializeDatabase(): Promise<void> {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         slug VARCHAR(255) UNIQUE NOT NULL,
-        created_by INT REFERENCES users(id),
+        created_by UUID REFERENCES rbac_users(id),
         created_at TIMESTAMP DEFAULT NOW()
       );
       CREATE TABLE IF NOT EXISTS pages (
         id SERIAL PRIMARY KEY,
         space_id INT REFERENCES spaces(id),
+        parent_id INT REFERENCES pages(id),
         title VARCHAR(255) NOT NULL,
         content JSONB NOT NULL DEFAULT '{}',
         acl JSONB NOT NULL DEFAULT '{}',
-        created_by INT REFERENCES users(id),
+        created_by UUID REFERENCES rbac_users(id),
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW(),
         deleted_at TIMESTAMP DEFAULT NULL
@@ -357,7 +358,7 @@ async function initializeDatabase(): Promise<void> {
         page_id INT NOT NULL REFERENCES pages(id),
         title VARCHAR(255) NOT NULL,
         content JSONB NOT NULL DEFAULT '{}',
-        created_by INT REFERENCES users(id),
+        created_by UUID REFERENCES rbac_users(id),
         created_at TIMESTAMP DEFAULT NOW()
       );
       CREATE TABLE IF NOT EXISTS page_attachments (
@@ -367,12 +368,12 @@ async function initializeDatabase(): Promise<void> {
         original_name VARCHAR(255) NOT NULL,
         mime_type VARCHAR(100) NOT NULL,
         size_bytes BIGINT NOT NULL DEFAULT 0,
-        uploaded_by INT REFERENCES users(id),
+        uploaded_by UUID REFERENCES rbac_users(id),
         created_at TIMESTAMP DEFAULT NOW()
       );
       CREATE TABLE IF NOT EXISTS ai_settings (
         id SERIAL PRIMARY KEY,
-        user_id INT UNIQUE REFERENCES users(id),
+        user_id UUID UNIQUE REFERENCES rbac_users(id),
         provider VARCHAR(50) NOT NULL DEFAULT 'openrouter',
         api_key TEXT,
         model VARCHAR(255) NOT NULL DEFAULT 'qwen/qwen3.6-plus:free',

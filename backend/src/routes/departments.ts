@@ -40,7 +40,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const includeDeleted = req.query.include_deleted === 'true';
     const query = `
       SELECT d.id, d.company_id, d.name, d.head_user_id, d.description, d.deleted_at, d.created_at, d.updated_at,
-             u.name as head_user_name, u.email as head_user_email,
+             u.full_name as head_user_name, u.email as head_user_email,
              (SELECT COUNT(*) FROM department_roles WHERE department_id = d.id AND user_id NOT IN (
                SELECT user_id FROM department_roles dr2 WHERE dr2.department_id = d.id AND dr2.role = 'department_head'
              )) as member_count
@@ -99,7 +99,7 @@ router.get('/:id', authMiddleware, uuid('id'), async (req: Request, res: Respons
 
     const result = await pool.query(
       `SELECT d.id, d.company_id, d.name, d.head_user_id, d.description, d.created_at, d.updated_at,
-              u.name as head_user_name, u.email as head_user_email,
+              u.full_name as head_user_name, u.email as head_user_email,
               (SELECT COUNT(*) FROM department_roles WHERE department_id = d.id) as member_count
        FROM departments d
        LEFT JOIN rbac_users u ON u.id = d.head_user_id
@@ -201,7 +201,7 @@ router.get('/:id/members', authMiddleware, uuid('id'), async (req: Request, res:
 
     const result = await pool.query(
       `SELECT dr.user_id, dr.role, dr.created_at as joined_at,
-              u.name as user_name, u.email as user_email
+              u.full_name as user_name, u.email as user_email
        FROM department_roles dr
        JOIN rbac_users u ON u.id = dr.user_id
        WHERE dr.department_id = $1
@@ -343,7 +343,7 @@ router.get('/org-tree', authMiddleware, async (req: Request, res: Response) => {
 
     // Get all active departments
     const depts = await pool.query(
-      `SELECT d.id, d.name, d.description, d.head_user_id, u.name as head_user_name, u.email as head_user_email
+      `SELECT d.id, d.name, d.description, d.head_user_id, u.full_name as head_user_name, u.email as head_user_email
        FROM departments d
        LEFT JOIN rbac_users u ON u.id = d.head_user_id
        WHERE d.company_id = $1 AND d.deleted_at IS NULL

@@ -10,7 +10,7 @@ class NotificationsRepository {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS notifications (
         id SERIAL PRIMARY KEY,
-        user_id INT,
+        user_id UUID,
         title TEXT,
         message TEXT,
         read BOOLEAN DEFAULT false,

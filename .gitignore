@@ -4,3 +4,4 @@ node_modules/
 *.log
 backups/
 .DS_Store
+docker-compose.override.yml

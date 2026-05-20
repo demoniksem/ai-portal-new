@@ -12,7 +12,7 @@ import {
 // Paperclip API base (:3100)
 const PC_API = 'http://localhost:3100';
 // ai-portal backend base (:8081)
-const PORTAL_API = 'http://localhost:8081';
+const PORTAL_API = 'http://localhost:3001';
 
 function getToken(): string {
   return typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';

@@ -1,4 +1,4 @@
-import { authMiddleware } from './auth';
+import { authMiddleware } from './rbac';
 import { optionalAuthMiddleware, requireRole, requireDepartmentRole, requireObjectRole, requireSuperAdmin, requireAdmin } from './rbac';
 import { validate, querySchemas, validateQuery } from './validation';
 import { globalLimiter, authLimiter, aiLimiter } from './rateLimiter';

@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const createBoardSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255),
   description: z.string().max(2000).optional(),
-  spaceId: z.string().uuid('spaceId must be a UUID').optional(),
+  spaceId: z.number().int().positive(),
   departmentId: z.string().uuid('departmentId must be a UUID').optional(),
 });
 
