@@ -2,15 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ChartBar, Users, Buildings, Lock, Palette, Robot, Gear } from '@phosphor-icons/react';
 import styles from '../../styles/admin.module.css';
 
 const NAV_ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: '📊', exact: true },
-  { href: '/admin/users', label: 'Users', icon: '👥' },
-  { href: '/admin/departments', label: 'Departments', icon: '🏢' },
-  { href: '/admin/roles', label: 'Roles', icon: '🔐' },
-  { href: '/admin/brand', label: 'Brand Settings', icon: '🎨' },
-  { href: '/settings', label: 'AI Settings', icon: '🤖' },
+  { href: '/admin', label: 'Dashboard', icon: <ChartBar size={18} weight="duotone" />, exact: true },
+  { href: '/admin/users', label: 'Users', icon: <Users size={18} weight="duotone" /> },
+  { href: '/admin/departments', label: 'Departments', icon: <Buildings size={18} weight="duotone" /> },
+  { href: '/admin/roles', label: 'Roles', icon: <Lock size={18} weight="duotone" /> },
+  { href: '/admin/brand', label: 'Brand Settings', icon: <Palette size={18} weight="duotone" /> },
+  { href: '/settings', label: 'AI Settings', icon: <Robot size={18} weight="duotone" /> },
 ];
 
 function getToken(): string {
@@ -43,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className={styles.page}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <p className={styles.sidebarTitle}>⚙️ Admin Panel</p>
+          <p className={styles.sidebarTitle} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Gear size={18} weight="duotone" />Admin Panel</p>
         </div>
         <nav className={styles.nav}>
           {NAV_ITEMS.map(item => (

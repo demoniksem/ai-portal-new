@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
+import { Warning, Cards } from '@phosphor-icons/react';
 import styles from './KanbanColumn.module.css';
 import { KanbanCard } from './KanbanCard';
 import type { KanbanCardData, KanbanColumnDef, KanbanCardStatus } from './KanbanBoard';
@@ -62,8 +63,8 @@ export function KanbanColumn({
             {cards.length}
           </span>
           {wipExceeded && (
-            <span className={styles.wipWarning} title="WIP limit exceeded">
-              ⚠️
+            <span className={styles.wipWarning} title="WIP limit exceeded" style={{ display: 'inline-flex' }}>
+              <Warning size={14} weight="fill" />
             </span>
           )}
         </div>
@@ -115,8 +116,8 @@ export function KanbanColumn({
         {/* Empty column placeholder */}
         {cards.length === 0 && (
           <div className={styles.emptyState}>
-            <span className={styles.emptyIcon} aria-hidden="true">
-              📋
+            <span className={styles.emptyIcon} aria-hidden="true" style={{ display: 'inline-flex' }}>
+              <Cards size={26} weight="duotone" />
             </span>
             <p>Перетащите карточку сюда</p>
           </div>

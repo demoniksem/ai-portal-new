@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Space, Page } from '../../types/api';
+import { FolderSimple } from '@phosphor-icons/react';
 import { getSpaces, createSpace, deleteSpace, getPages } from '../../lib/api';
 import styles from '../../styles/Spaces.module.css';
 
@@ -111,7 +112,7 @@ export default function SpacesPage() {
       <div className={styles.container}>
         <ToastContainer />
         <header className={styles.header}>
-          <h1>📁 Пространства</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><FolderSimple size={26} weight="duotone" />Пространства</h1>
         </header>
         <div className={styles.grid}>
           {[1, 2, 3].map(i => <div key={i} className={styles.skeleton} />)}
@@ -125,7 +126,7 @@ export default function SpacesPage() {
       <ToastContainer />
       <header className={styles.header}>
         <div className={styles.headerRow}>
-          <h1>📁 Пространства</h1>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><FolderSimple size={26} weight="duotone" />Пространства</h1>
           <div className={styles.headerActions}>
             <button className={styles.btnPrimary} onClick={() => setShowCreate(true)}>+ Новое пространство</button>
             <Link href="/" className={styles.btnSecondary}>← Канбан</Link>
@@ -159,7 +160,7 @@ export default function SpacesPage() {
 
       {spaces.length === 0 ? (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📁</div>
+          <div className={styles.emptyIcon}><FolderSimple size={48} weight="duotone" /></div>
           <div className={styles.emptyTitle}>Нет пространств</div>
           <div className={styles.emptyText}>Создайте первое пространство для организации страниц</div>
           <button className={styles.btnPrimary} onClick={() => setShowCreate(true)} style={{ marginTop: '16px' }}>+ Создать пространство</button>

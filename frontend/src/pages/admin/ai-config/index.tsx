@@ -286,7 +286,7 @@ export default function AiConfigPage() {
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} disabled={saving || !enabled}>
-            {saving ? 'Сохранение...' : '💾 Сохранить'}
+            {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
           <button
             type="button"

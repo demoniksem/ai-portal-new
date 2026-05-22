@@ -13,7 +13,7 @@ const departmentsService = new DepartmentsService();
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function getCompanyId(userId: string): Promise<string | null> {
-  const r = await pool.query('SELECT company_id FROM users WHERE id = $1', [userId]);
+  const r = await pool.query('SELECT company_id FROM rbac_users WHERE id = $1', [userId]);
   return r.rows[0]?.company_id ?? null;
 }
 
@@ -23,10 +23,11 @@ router.get('/stats', authMiddleware, requireAdmin, async (req: Request, res: Res
   const requestId = req.requestId || 'unknown';
   try {
     const [usersResult, deptsResult, boardsResult, cardsResult] = await Promise.all([
-      pool.query('SELECT COUNT(*) FROM users WHERE company_id = $1', [companyId]),
-      pool.query('SELECT COUNT(*) FROM departments WHERE company_id = $1', [companyId]),
-      pool.query('SELECT COUNT(*) FROM boards WHERE company_id = $1', [companyId]),
-      pool.query(`SELECT COUNT(*) FROM cards c JOIN boards b ON c.board_id = b.id WHERE b.company_id = $1`, [companyId]),
+      pool.query('SELECT COUNT(*) FROM rbac_users WHERE company_id = $1 AND deleted_at IS NULL', [companyId]),
+      pool.query('SELECT COUNT(*) FROM departments WHERE company_id = $1 AND deleted_at IS NULL', [companyId]),
+      // boards/cards are not company-scoped in this single-tenant schema — count all
+      pool.query('SELECT COUNT(*) FROM boards'),
+      pool.query('SELECT COUNT(*) FROM cards'),
     ]);
     return res.json({
       users: parseInt(usersResult.rows[0].count, 10),
@@ -46,8 +47,12 @@ router.get('/users', authMiddleware, requireAdmin, async (req: Request, res: Res
   const requestId = req.requestId || 'unknown';
   try {
     const result = await pool.query(
-      `SELECT u.id, u.email, u.full_name, u.company_role, u.is_active, u.created_at
-       FROM users u WHERE u.company_id = $1 ORDER BY u.created_at DESC`,
+      `SELECT u.id, u.email, u.full_name, COALESCE(cr.role::text, 'member') AS company_role,
+              u.is_active, u.created_at
+       FROM rbac_users u
+       LEFT JOIN company_roles cr ON cr.user_id = u.id AND cr.company_id = u.company_id
+       WHERE u.company_id = $1 AND u.deleted_at IS NULL
+       ORDER BY u.created_at DESC`,
       [companyId]
     );
     return res.json(result.rows);
@@ -65,23 +70,28 @@ router.post('/users', authMiddleware, requireAdmin, async (req: Request, res: Re
     const { email, password, fullName, role = 'employee' } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
 
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    const existing = await pool.query('SELECT id FROM rbac_users WHERE email = $1 AND deleted_at IS NULL', [email.toLowerCase()]);
     if (existing.rows.length > 0) return res.status(409).json({ error: 'Email already in use' });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      `INSERT INTO users (email, password_hash, full_name, company_role, company_id, is_active)
-       VALUES ($1, $2, $3, $4, $5, true) RETURNING id, email, full_name, company_role, is_active, created_at`,
-      [email.toLowerCase(), passwordHash, fullName || null, role, companyId]
+      `INSERT INTO rbac_users (email, password_hash, full_name, company_id, is_active)
+       VALUES ($1, $2, $3, $4, true) RETURNING id, email, full_name, is_active, created_at`,
+      [email.toLowerCase(), passwordHash, fullName || null, companyId]
+    );
+    const newUser = result.rows[0];
+    await pool.query(
+      `INSERT INTO company_roles (user_id, company_id, role) VALUES ($1, $2, $3)`,
+      [newUser.id, companyId, role]
     );
 
     await auditService.log({
       companyId, actorId: req.user!.id,
-      action: 'user.create', objectType: 'user', objectId: result.rows[0].id,
+      action: 'user.create', objectType: 'user', objectId: newUser.id,
       newValue: { email, role },
     });
 
-    return res.status(201).json(result.rows[0]);
+    return res.status(201).json({ ...newUser, company_role: role });
   } catch (e) {
     logger.error({ msg: '[Admin] create user error', error: (e as Error).message, companyId, requestId });
     return res.status(500).json({ error: 'Failed to create user' });
@@ -96,7 +106,7 @@ router.patch('/users/:userId', authMiddleware, requireAdmin, async (req: Request
     const { userId } = req.params;
     const { email, fullName, role, password, isActive } = req.body;
 
-    const userCheck = await pool.query('SELECT id FROM users WHERE id = $1 AND company_id = $2', [userId, companyId]);
+    const userCheck = await pool.query('SELECT id FROM rbac_users WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL', [userId, companyId]);
     if (userCheck.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
     const updates: string[] = [];
@@ -104,13 +114,12 @@ router.patch('/users/:userId', authMiddleware, requireAdmin, async (req: Request
     let idx = 1;
 
     if (email !== undefined) {
-      const dup = await pool.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email.toLowerCase(), userId]);
+      const dup = await pool.query('SELECT id FROM rbac_users WHERE email = $1 AND id != $2 AND deleted_at IS NULL', [email.toLowerCase(), userId]);
       if (dup.rows.length > 0) return res.status(409).json({ error: 'Email already in use' });
       updates.push(`email = $${idx++}`);
       values.push(email.toLowerCase());
     }
     if (fullName !== undefined) { updates.push(`full_name = $${idx++}`); values.push(fullName || null); }
-    if (role !== undefined) { updates.push(`company_role = $${idx++}`); values.push(role); }
     if (isActive !== undefined) { updates.push(`is_active = $${idx++}`); values.push(isActive); }
     if (password) {
       const hash = await bcrypt.hash(password, 10);
@@ -118,12 +127,31 @@ router.patch('/users/:userId', authMiddleware, requireAdmin, async (req: Request
       values.push(hash);
     }
 
-    if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
+    // company_role lives in the company_roles table, not on rbac_users — upsert it.
+    if (role !== undefined) {
+      const upd = await pool.query(
+        'UPDATE company_roles SET role = $1, updated_at = now() WHERE user_id = $2 AND company_id = $3',
+        [role, userId, companyId]
+      );
+      if (upd.rowCount === 0) {
+        await pool.query('INSERT INTO company_roles (user_id, company_id, role) VALUES ($1, $2, $3)', [userId, companyId, role]);
+      }
+    }
 
-    values.push(userId);
+    if (updates.length === 0 && role === undefined) return res.status(400).json({ error: 'No fields to update' });
+
+    if (updates.length > 0) {
+      values.push(userId);
+      await pool.query(`UPDATE rbac_users SET ${updates.join(', ')}, updated_at = now() WHERE id = $${idx}`, values);
+    }
+
     const result = await pool.query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, email, full_name, company_role, is_active, created_at`,
-      values
+      `SELECT u.id, u.email, u.full_name, COALESCE(cr.role::text, 'member') AS company_role,
+              u.is_active, u.created_at
+       FROM rbac_users u
+       LEFT JOIN company_roles cr ON cr.user_id = u.id AND cr.company_id = u.company_id
+       WHERE u.id = $1`,
+      [userId]
     );
 
     await auditService.log({
@@ -148,7 +176,7 @@ router.delete('/users/:userId', authMiddleware, requireAdmin, async (req: Reques
     if (userId === req.user!.id) return res.status(400).json({ error: 'Cannot delete yourself' });
 
     const result = await pool.query(
-      'DELETE FROM users WHERE id = $1 AND company_id = $2 RETURNING id',
+      'UPDATE rbac_users SET deleted_at = now() WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL RETURNING id',
       [userId, companyId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -172,8 +200,8 @@ router.get('/departments', authMiddleware, requireAdmin, async (req: Request, re
   try {
     const result = await pool.query(
       `SELECT d.id, d.name, d.description, d.created_at,
-              (SELECT COUNT(*) FROM department_members dm JOIN users u ON dm.user_id = u.id WHERE u.company_id = $1 AND dm.department_id = d.id) as member_count
-       FROM departments d WHERE d.company_id = $1 ORDER BY d.created_at DESC`,
+              (SELECT COUNT(*) FROM department_roles dm JOIN rbac_users u ON dm.user_id = u.id WHERE u.company_id = $1 AND u.deleted_at IS NULL AND dm.department_id = d.id) as member_count
+       FROM departments d WHERE d.company_id = $1 AND d.deleted_at IS NULL ORDER BY d.created_at DESC`,
       [companyId]
     );
     return res.json(result.rows);
@@ -260,10 +288,10 @@ router.get('/departments/:deptId/members', authMiddleware, requireAdmin, async (
   try {
     const { deptId } = req.params;
     const result = await pool.query(
-      `SELECT u.id, u.email, u.full_name, dm.role as department_role
-       FROM department_members dm
-       JOIN users u ON dm.user_id = u.id
-       WHERE dm.department_id = $1 AND u.company_id = $2`,
+      `SELECT u.id, u.email, u.full_name, dm.role::text as department_role
+       FROM department_roles dm
+       JOIN rbac_users u ON dm.user_id = u.id
+       WHERE dm.department_id = $1 AND u.company_id = $2 AND u.deleted_at IS NULL`,
       [deptId, companyId]
     );
     return res.json(result.rows);
@@ -281,14 +309,16 @@ router.post('/departments/:deptId/members/:userId', authMiddleware, requireAdmin
     const { deptId, userId } = req.params;
     const { role = 'member' } = req.body;
 
-    const userCheck = await pool.query('SELECT id FROM users WHERE id = $1 AND company_id = $2', [userId, companyId]);
+    const userCheck = await pool.query('SELECT id FROM rbac_users WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL', [userId, companyId]);
     if (userCheck.rows.length === 0) return res.status(404).json({ error: 'User not found' });
 
-    await pool.query(
-      `INSERT INTO department_members (department_id, user_id, role) VALUES ($1, $2, $3)
-       ON CONFLICT (department_id, user_id) DO UPDATE SET role = $3`,
+    const upd = await pool.query(
+      'UPDATE department_roles SET role = $3, updated_at = now() WHERE department_id = $1 AND user_id = $2',
       [deptId, userId, role]
     );
+    if (upd.rowCount === 0) {
+      await pool.query('INSERT INTO department_roles (department_id, user_id, role) VALUES ($1, $2, $3)', [deptId, userId, role]);
+    }
 
     await auditService.log({
       companyId, actorId: req.user!.id,
@@ -309,7 +339,7 @@ router.delete('/departments/:deptId/members/:userId', authMiddleware, requireAdm
   const requestId = req.requestId || 'unknown';
   try {
     const { deptId, userId } = req.params;
-    await pool.query('DELETE FROM department_members WHERE department_id = $1 AND user_id = $2', [deptId, userId]);
+    await pool.query('DELETE FROM department_roles WHERE department_id = $1 AND user_id = $2', [deptId, userId]);
 
     await auditService.log({
       companyId, actorId: req.user!.id,
@@ -333,7 +363,7 @@ router.patch('/departments/:deptId/members/:userId', authMiddleware, requireAdmi
     if (!role) return res.status(400).json({ error: 'role is required' });
 
     const result = await pool.query(
-      `UPDATE department_members SET role = $1 WHERE department_id = $2 AND user_id = $3 RETURNING department_id, user_id, role`,
+      `UPDATE department_roles SET role = $1, updated_at = now() WHERE department_id = $2 AND user_id = $3 RETURNING department_id, user_id, role::text AS role`,
       [role, deptId, userId]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
@@ -357,13 +387,14 @@ router.get('/roles', authMiddleware, requireAdmin, async (req: Request, res: Res
   const requestId = req.requestId || 'unknown';
   try {
     const result = await pool.query(
-      `SELECT u.id, u.email, u.full_name, u.company_role, u.is_active,
-              d.name as department_name, dm.role as department_role
-       FROM users u
-       LEFT JOIN department_members dm ON dm.user_id = u.id
-       LEFT JOIN departments d ON d.id = dm.department_id
-       WHERE u.company_id = $1
-       ORDER BY u.company_role, u.email`,
+      `SELECT u.id, u.email, u.full_name, COALESCE(cr.role::text, 'member') AS company_role, u.is_active,
+              d.name as department_name, dr.role::text as department_role
+       FROM rbac_users u
+       LEFT JOIN company_roles cr ON cr.user_id = u.id AND cr.company_id = u.company_id
+       LEFT JOIN department_roles dr ON dr.user_id = u.id
+       LEFT JOIN departments d ON d.id = dr.department_id
+       WHERE u.company_id = $1 AND u.deleted_at IS NULL
+       ORDER BY u.email`,
       [companyId]
     );
     return res.json(result.rows);
@@ -382,11 +413,14 @@ router.patch('/roles/:userId/company', authMiddleware, requireAdmin, async (req:
     const { role } = req.body;
     if (!role) return res.status(400).json({ error: 'role is required' });
 
-    const result = await pool.query(
-      `UPDATE users SET company_role = $1 WHERE id = $2 AND company_id = $3 RETURNING id, email, full_name, company_role`,
-      [role, userId, companyId]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const userCheck = await pool.query('SELECT id, email, full_name FROM rbac_users WHERE id = $1 AND company_id = $2 AND deleted_at IS NULL', [userId, companyId]);
+    if (userCheck.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+    const upd = await pool.query('UPDATE company_roles SET role = $1, updated_at = now() WHERE user_id = $2 AND company_id = $3', [role, userId, companyId]);
+    if (upd.rowCount === 0) {
+      await pool.query('INSERT INTO company_roles (user_id, company_id, role) VALUES ($1, $2, $3)', [userId, companyId, role]);
+    }
+    const result = { rows: [{ ...userCheck.rows[0], company_role: role }] };
 
     await auditService.log({
       companyId, actorId: req.user!.id,

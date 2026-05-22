@@ -1,9 +1,13 @@
 'use client';
-import { useState, useEffect, useRef, useCallback, FormEvent, KeyboardEvent } from 'react';
+import { useState, useEffect, useRef, useCallback, FormEvent, KeyboardEvent, type ReactNode } from 'react';
 import Link from 'next/link';
+import {
+  Robot, Gear, User, PaperPlaneTilt, Stop, WarningCircle,
+  FileText, Lightbulb, ArrowsClockwise, ClipboardText,
+} from '@phosphor-icons/react';
 import styles from '@/styles/Assistant.module.css';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = typeof window !== 'undefined' ? 'http://' + window.location.hostname + ':8081' : '';
 
 interface Message {
   id: string;
@@ -33,11 +37,11 @@ async function fetchAI<T>(path: string, body?: unknown, token?: string | null): 
   return data as T;
 }
 
-const SUGGESTED_PROMPTS = [
-  { icon: '📄', text: 'Help me write a project status report' },
-  { icon: '💡', text: 'Explain this code snippet' },
-  { icon: '🔄', text: 'Refactor this function for better performance' },
-  { icon: '📋', text: 'Create a meeting agenda for our team sync' },
+const SUGGESTED_PROMPTS: { icon: ReactNode; text: string }[] = [
+  { icon: <FileText size={18} weight="duotone" />, text: 'Help me write a project status report' },
+  { icon: <Lightbulb size={18} weight="duotone" />, text: 'Explain this code snippet' },
+  { icon: <ArrowsClockwise size={18} weight="duotone" />, text: 'Refactor this function for better performance' },
+  { icon: <ClipboardText size={18} weight="duotone" />, text: 'Create a meeting agenda for our team sync' },
 ];
 
 function formatTime(date: Date): string {
@@ -195,7 +199,7 @@ export default function AssistantPage() {
         <div className={styles.headerLeft}>
           <Link href="/" style={{ textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>← Back</Link>
           <div className={styles.headerTitle}>
-            <span>🤖</span>
+            <span style={{ display: 'inline-flex', color: 'var(--color-primary)' }}><Robot size={20} weight="duotone" /></span>
             <span>AI Assistant</span>
             {config?.model && <span className={styles.modelBadge}>{modelLabel}</span>}
           </div>
@@ -204,7 +208,7 @@ export default function AssistantPage() {
           {messages.length > 0 && (
             <button className={styles.clearBtn} onClick={clearChat} title="Clear chat">Clear</button>
           )}
-          <Link href="/settings" className={styles.iconBtn} title="AI Settings">⚙️</Link>
+          <Link href="/settings" className={styles.iconBtn} title="AI Settings"><Gear size={18} /></Link>
         </div>
       </div>
 
@@ -212,7 +216,7 @@ export default function AssistantPage() {
       <div className={styles.messagesWrapper}>
         {messages.length === 0 ? (
           <div className={styles.welcome}>
-            <div className={styles.welcomeIcon}>🤖</div>
+            <div className={styles.welcomeIcon}><Robot size={40} weight="duotone" /></div>
             <h1 className={styles.welcomeTitle}>How can I help you today?</h1>
             <p className={styles.welcomeSubtitle}>
               I can assist with writing, analysis, coding, brainstorming, and more.
@@ -236,7 +240,7 @@ export default function AssistantPage() {
             {messages.map(msg => (
               <div key={msg.id} className={`${styles.message} ${styles[msg.role]}`}>
                 <div className={`${styles.avatar} ${styles[msg.role]}`}>
-                  {msg.role === 'assistant' ? '🤖' : '👤'}
+                  {msg.role === 'assistant' ? <Robot size={18} weight="duotone" /> : <User size={18} weight="duotone" />}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div className={styles.bubble}>
@@ -263,9 +267,10 @@ export default function AssistantPage() {
                 border: '1px solid var(--color-error)',
                 borderRadius: 8,
                 color: 'var(--color-error)',
-                fontSize: '0.88rem'
+                fontSize: '0.88rem',
+                display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                ❌ {error}
+                <WarningCircle size={16} weight="fill" />{error}
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -302,7 +307,7 @@ export default function AssistantPage() {
               disabled={loading || !input.trim()}
               title={loading ? 'Stop' : 'Send'}
             >
-              {loading ? '■' : '➤'}
+              {loading ? <Stop size={18} weight="fill" /> : <PaperPlaneTilt size={18} weight="fill" />}
             </button>
           </form>
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Warning } from '@phosphor-icons/react';
 import styles from './ColumnHeader.module.css';
 import type { KanbanColumnDef, KanbanCardStatus } from './KanbanBoard';
 
@@ -102,8 +103,8 @@ export function ColumnHeader({ column, cardCount, onUpdate, onCardAdd }: ColumnH
         </span>
 
         {wipExceeded && (
-          <span className={styles.wipWarning} title="WIP limit exceeded">
-            ⚠️
+          <span className={styles.wipWarning} title="WIP limit exceeded" style={{ display: 'inline-flex' }}>
+            <Warning size={14} weight="fill" />
           </span>
         )}
       </div>

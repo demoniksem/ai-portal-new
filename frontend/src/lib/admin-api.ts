@@ -1,47 +1,27 @@
-// Admin API client — talks to Paperclip API at localhost:3100/api/admin/*
-// Auth: uses PAPERCLIP_API_KEY (env) + PAPERCLIP_RUN_ID (env, for mutations)
+// Admin API client — talks to the AI Portal backend at <host>:8081/api/admin/*
+// Auth: JWT bearer token from localStorage (same as lib/api.ts and login.tsx)
 
-interface ProcessEnv {
-  NEXT_PUBLIC_PAPERCLIP_API_KEY?: string;
-  NEXT_PUBLIC_PAPERCLIP_RUN_ID?: string;
-  PAPERCLIP_API_KEY?: string;
-  PAPERCLIP_RUN_ID?: string;
-}
-declare const process: { env: ProcessEnv };
+const API_BASE = typeof window !== 'undefined' ? 'http://' + window.location.hostname + ':8081' : '';
 
-const PC_API = 'http://localhost:3100';
-
-function getApiKey(): string {
-  const val = typeof window !== 'undefined'
-    ? (process.env.NEXT_PUBLIC_PAPERCLIP_API_KEY ?? '')
-    : (process.env.PAPERCLIP_API_KEY ?? '');
-  return val;
-}
-
-function getRunId(): string {
-  const val = typeof window !== 'undefined'
-    ? (process.env.NEXT_PUBLIC_PAPERCLIP_RUN_ID ?? '')
-    : (process.env.PAPERCLIP_RUN_ID ?? '');
-  return val;
+function getToken(): string {
+  return typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
 }
 
 async function adminFetch<T>(
   method: string,
   path: string,
   body?: unknown,
-  options: { isMutation?: boolean } = {}
+  _options: { isMutation?: boolean } = {}
 ): Promise<T> {
-  const apiKey = getApiKey();
-  const runId = getRunId();
+  const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-    ...(options.isMutation && runId ? { 'X-Paperclip-Run-Id': runId } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
   const opts: RequestInit = { method, headers };
   if (body !== undefined) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${PC_API}${path}`, opts);
+  const res = await fetch(`${API_BASE}${path}`, opts);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error || `HTTP ${res.status}`);
   return data as T;

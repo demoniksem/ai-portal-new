@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { SpaceDetail, Page, PageBlock, PageAttachment } from '../../types/api';
+import { FolderOpen, FolderSimple, FileText } from '@phosphor-icons/react';
 import { getSpaceById, getPages, createPage, updatePage, deletePage, restorePage, getAttachments, addAttachment, deleteAttachment } from '../../lib/api';
 import styles from '../../styles/SpaceDetail.module.css';
 
@@ -49,7 +50,7 @@ function PageTree({ pages, selectedId, onSelect, onDelete, onAddChild, depth = 0
       <div key={page.id} className={styles.treeItem}>
         <div className={`${styles.treeRow} ${isSelected ? styles.treeRowSelected : ''}`} style={{ paddingLeft: `${12 + d * 18}px` }}>
           <button className={styles.treeBtn} onClick={() => onSelect(page)} title={page.title}>
-            <span className={styles.treeIcon}>{children.length > 0 ? (isSelected ? '📂' : '📁') : '📄'}</span>
+            <span className={styles.treeIcon} style={{ display: 'inline-flex' }}>{children.length > 0 ? (isSelected ? <FolderOpen size={15} weight="duotone" /> : <FolderSimple size={15} weight="duotone" />) : <FileText size={15} weight="duotone" />}</span>
             <span className={styles.treeLabel}>{page.title}</span>
           </button>
           <div className={styles.treeActions}>
@@ -297,7 +298,7 @@ export default function SpaceDetailPage() {
       <main className={styles.main}>
         {!selectedPage ? (
           <div className={styles.noSelection}>
-            <div className={styles.noSelectionIcon}>📄</div>
+            <div className={styles.noSelectionIcon}><FileText size={48} weight="duotone" /></div>
             <p>Выберите страницу слева или создайте новую</p>
             <button className={styles.btnPrimary} onClick={handleCreateRoot}>+ Создать страницу</button>
           </div>
@@ -314,7 +315,7 @@ export default function SpaceDetailPage() {
                 <button className={styles.btnSecondary} onClick={() => { setShowAttachments(a => !a); if (!showAttachments && selectedPage) loadAttachments(selectedPage.id); }}>Вложения {attachments.length > 0 && `(${attachments.length})`}</button>
                 <button className={styles.btnSecondary} onClick={handleShowVersions}>История</button>
                 <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
-                  {saving ? 'Сохранение...' : '💾 Сохранить'}
+                  {saving ? 'Сохранение…' : 'Сохранить'}
                 </button>
               </div>
             </div>

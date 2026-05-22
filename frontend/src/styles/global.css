@@ -1,6 +1,14 @@
 /* Global styles */
 @import './design-system.css';
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* De-purple: the taste system uses a single blue accent, no "AI purple". */
+:root { --color-active-nav: #2563eb; }
+[data-theme="dark"] { --color-active-nav: #3b82f6; }
+
 * {
   box-sizing: border-box;
   margin: 0;

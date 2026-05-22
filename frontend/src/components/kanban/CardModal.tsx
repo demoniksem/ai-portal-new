@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {
+  ListBullets, CheckSquare, NotePencil, ChatCircle, LinkSimple,
+  ClockCounterClockwise, Circle, User, Trash, ArrowFatDown, ArrowFatUp,
+} from '@phosphor-icons/react';
 import styles from './CardModal.module.css';
 import { Modal } from '../ui';
 import {
@@ -183,8 +187,8 @@ function OverviewTab({
           <div className={styles.assigneesList}>
             {card.assignees && card.assignees.length > 0 ? (
               card.assignees.map((a) => (
-                <span key={a.user_id} className={styles.assigneeChip}>
-                  👤 {a.full_name || a.user_id}
+                <span key={a.user_id} className={styles.assigneeChip} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                  <User size={14} weight="fill" />{a.full_name || a.user_id}
                 </span>
               ))
             ) : (
@@ -364,7 +368,7 @@ function CustomFieldsTab({ cardId }: { cardId: string }) {
     <div className={styles.customFieldsContainer}>
       {fieldEntries.length === 0 && (
         <div className={styles.emptyState}>
-          <span className={styles.emptyStateIcon} style={{ fontSize: '1.5rem' }}>📝</span>
+          <span className={styles.emptyStateIcon} style={{ display: 'inline-flex' }}><NotePencil size={24} weight="duotone" /></span>
           <p className={styles.emptyStateText}>Нет дополнительных полей</p>
         </div>
       )}
@@ -459,7 +463,7 @@ function CommentsTab({ cardId }: { cardId: string }) {
 
       {comments.length === 0 && (
         <div className={styles.emptyState}>
-          <span className={styles.emptyStateIcon} style={{ fontSize: '1.5rem' }}>💬</span>
+          <span className={styles.emptyStateIcon} style={{ display: 'inline-flex' }}><ChatCircle size={24} weight="duotone" /></span>
           <p className={styles.emptyStateText}>Пока нет комментариев</p>
         </div>
       )}
@@ -467,7 +471,7 @@ function CommentsTab({ cardId }: { cardId: string }) {
       <div className={styles.commentList}>
         {comments.map((comment) => (
           <div key={comment.id} className={styles.comment}>
-            <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>👤</span>
+            <span style={{ display: 'inline-flex', flexShrink: 0, color: 'var(--color-text-muted)' }}><User size={22} weight="fill" /></span>
             <div className={styles.commentBubble}>
               <div className={styles.commentMeta}>
                 <span className={styles.commentAuthor}>
@@ -538,7 +542,7 @@ function RelationsTab({ cardId }: { cardId: string }) {
     <div className={styles.relationsContainer}>
       {groups.length === 0 && (
         <div className={styles.emptyState}>
-          <span className={styles.emptyStateIcon} style={{ fontSize: '1.5rem' }}>🔗</span>
+          <span className={styles.emptyStateIcon} style={{ display: 'inline-flex' }}><LinkSimple size={24} weight="duotone" /></span>
           <p className={styles.emptyStateText}>Нет связей</p>
         </div>
       )}
@@ -548,7 +552,7 @@ function RelationsTab({ cardId }: { cardId: string }) {
           {rels.map((rel) => (
             <div key={rel.id} className={styles.relationItem}>
               <span className={styles.relationIcon}>
-                {type === 'blocks' ? '🔽' : type === 'blocked_by' ? '🔼' : '🔗'}
+                {type === 'blocks' ? <ArrowFatDown size={15} weight="fill" /> : type === 'blocked_by' ? <ArrowFatUp size={15} weight="fill" /> : <LinkSimple size={15} weight="duotone" />}
               </span>
               <span className={styles.relationTitle}>
                 {rel.target_card_title || rel.target_card_id}
@@ -600,7 +604,7 @@ function ActivityTab({ cardId }: { cardId: string }) {
     <div className={styles.activityContainer}>
       {activities.length === 0 && (
         <div className={styles.emptyState}>
-          <span className={styles.emptyStateIcon} style={{ fontSize: '1.5rem' }}>📋</span>
+          <span className={styles.emptyStateIcon} style={{ display: 'inline-flex' }}><ListBullets size={24} weight="duotone" /></span>
           <p className={styles.emptyStateText}>Нет активностей</p>
         </div>
       )}
@@ -631,13 +635,13 @@ function ActivityTab({ cardId }: { cardId: string }) {
 
 // ── Main CardModal ───────────────────────────────────────────────────────────
 
-const TABS: { key: CardTab; label: string; icon: string }[] = [
-  { key: 'overview', label: 'Обзор', icon: '📋' },
-  { key: 'checklist', label: 'Чек-лист', icon: '✅' },
-  { key: 'custom-fields', label: 'Поля', icon: '📝' },
-  { key: 'comments', label: 'Комментарии', icon: '💬' },
-  { key: 'relations', label: 'Связи', icon: '🔗' },
-  { key: 'activity', label: 'Активность', icon: '📋' },
+const TABS: { key: CardTab; label: string; icon: React.ReactNode }[] = [
+  { key: 'overview', label: 'Обзор', icon: <ListBullets size={16} weight="duotone" /> },
+  { key: 'checklist', label: 'Чек-лист', icon: <CheckSquare size={16} weight="duotone" /> },
+  { key: 'custom-fields', label: 'Поля', icon: <NotePencil size={16} weight="duotone" /> },
+  { key: 'comments', label: 'Комментарии', icon: <ChatCircle size={16} weight="duotone" /> },
+  { key: 'relations', label: 'Связи', icon: <LinkSimple size={16} weight="duotone" /> },
+  { key: 'activity', label: 'Активность', icon: <ClockCounterClockwise size={16} weight="duotone" /> },
 ];
 
 export function CardModal({
@@ -739,9 +743,11 @@ export function CardModal({
                 style={{ color: priorityCfg.color, fontSize: 'var(--text-sm)' }}
                 title={priorityCfg.label}
               >
-                {priorityKey === 'critical' ? '🔴' :
-                 priorityKey === 'high' ? '🟠' :
-                 priorityKey === 'medium' ? '🟡' : '🟢'}
+                <Circle size={10} weight="fill" color={
+                  priorityKey === 'critical' ? '#dc2626' :
+                  priorityKey === 'high' ? '#ea580c' :
+                  priorityKey === 'medium' ? '#d97706' : '#16a34a'
+                } />
               </span>
             )}
             {card?.type && (
@@ -772,9 +778,9 @@ export function CardModal({
             <button
               onClick={handleDelete}
               className={styles.headerActionBtn}
-              style={{ color: 'var(--color-error)' }}
+              style={{ color: 'var(--color-error)', display: 'inline-flex', alignItems: 'center', gap: 6 }}
             >
-              🗑 Удалить
+              <Trash size={15} weight="duotone" />Удалить
             </button>
           </div>
         </div>

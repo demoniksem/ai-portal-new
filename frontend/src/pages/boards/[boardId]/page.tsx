@@ -20,6 +20,7 @@ import type {
 import { KanbanBoard, KanbanColumnDef, KanbanSwimlaneDef, KanbanCardData } from '../../../components/kanban/KanbanBoard';
 import { CardModal } from '../../../components/kanban/CardModal';
 import { TemplatesDialog } from '../../../components/kanban/TemplatesDialog';
+import { PencilSimple, Trash, Warning, Kanban } from '@phosphor-icons/react';
 import type { CardTemplateResponse } from '../../../lib/api';
 import styles from './BoardDetail.module.css';
 
@@ -346,14 +347,16 @@ export default function BoardDetailPage() {
               <button
                 className={styles.columnMenuItem}
                 onClick={() => handleRenameColumn(colId)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
               >
-                ✏️ Переименовать
+                <PencilSimple size={15} weight="duotone" />Переименовать
               </button>
               <button
                 className={`${styles.columnMenuItem} ${styles.columnMenuItemDanger}`}
                 onClick={() => handleDeleteColumn(colId)}
+                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
               >
-                🗑 Удалить
+                <Trash size={15} weight="duotone" />Удалить
               </button>
             </div>
           )}
@@ -377,7 +380,7 @@ export default function BoardDetailPage() {
   if (error || !board) {
     return (
       <div className={styles.errorState}>
-        <span>⚠️ {error || 'Доска не найдена'}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Warning size={18} weight="fill" />{error || 'Доска не найдена'}</span>
         <Link href="/spaces">
           <button className={styles.actionBtn}>← Вернуться в пространства</button>
         </Link>
@@ -419,7 +422,7 @@ export default function BoardDetailPage() {
             className={styles.actionBtn}
             onClick={() => setTemplatesOpen(true)}
           >
-            📋 Шаблоны
+            <Kanban size={16} weight="duotone" style={{ verticalAlign: '-3px', marginRight: 6 }} />Шаблоны
           </button>
         </div>
       </div>

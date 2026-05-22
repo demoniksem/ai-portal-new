@@ -64,6 +64,18 @@ async function initializeDatabase(): Promise<void> {
         UNIQUE(user_id, company_id)
       );
 
+      -- Per-company brand settings
+      CREATE TABLE IF NOT EXISTS company_settings (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        company_id UUID NOT NULL UNIQUE REFERENCES companies(id) ON DELETE CASCADE,
+        company_name VARCHAR(255),
+        logo_url TEXT,
+        primary_color VARCHAR(32) DEFAULT '#2563eb',
+        accent_color VARCHAR(32) DEFAULT '#3b82f6',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+
       -- Departments
       CREATE TABLE IF NOT EXISTS departments (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

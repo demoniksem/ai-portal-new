@@ -1,6 +1,6 @@
 import { Space, SpaceDetail, Page, PageVersion, PageAttachment } from '../types/api';
 
-const API_BASE = 'http://localhost:3001';
+const API_BASE = typeof window !== 'undefined' ? 'http://' + window.location.hostname + ':8081' : '';
 
 function getToken(): string {
   return typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';

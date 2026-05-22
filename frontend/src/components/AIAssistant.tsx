@@ -1,5 +1,10 @@
 'use client';
 import React, { useState, useCallback } from 'react';
+import {
+  Info, Lightbulb, NotePencil, Warning, Target, CaretRight, User, ChatCircle,
+  VideoCamera, ChartBar, ChartLineUp, CalendarBlank, ListBullets, Wrench,
+  Robot, ArrowsClockwise, WarningCircle, MagicWand, FloppyDisk, CircleNotch, Sparkle,
+} from '@phosphor-icons/react';
 import { Space, Page, PageBlock } from '../types/api';
 import { buildAI, createPage } from '../lib/api';
 
@@ -18,10 +23,14 @@ interface GeneratedPage {
   content: PageBlock[];
 }
 
-const MACRO_ICONS: Record<string, string> = {
-  info: 'ℹ️', tip: '💡', note: '📝', warning: '⚠️', decision: '🎯',
-  expand: '▶️', mention: '👤', quote: '💬', divider: '―', video: '🎥',
-  chart: '📊', progress: '📈', calendar: '📅', toc: '📑',
+const MACRO_ICONS: Record<string, React.ReactNode> = {
+  info: <Info size={16} weight="fill" />, tip: <Lightbulb size={16} weight="fill" />,
+  note: <NotePencil size={16} weight="fill" />, warning: <Warning size={16} weight="fill" />,
+  decision: <Target size={16} weight="fill" />, expand: <CaretRight size={16} weight="bold" />,
+  mention: <User size={16} weight="fill" />, quote: <ChatCircle size={16} weight="fill" />,
+  divider: '―', video: <VideoCamera size={16} weight="fill" />,
+  chart: <ChartBar size={16} weight="fill" />, progress: <ChartLineUp size={16} weight="fill" />,
+  calendar: <CalendarBlank size={16} weight="fill" />, toc: <ListBullets size={16} weight="fill" />,
 };
 
 function renderBlock(block: PageBlock, index: number): React.ReactNode {
@@ -90,13 +99,13 @@ function renderBlock(block: PageBlock, index: number): React.ReactNode {
       if (name === 'expand') {
         return (
           <div key={index} style={{ border: '1px solid var(--color-text-muted, #e5e7eb)', borderRadius: 6, marginBottom: 12, overflow: 'hidden' }}>
-            <div style={{ background: 'var(--color-background-alt, #f3f4f6)', padding: '10px 14px', fontWeight: 600, fontSize: '0.9rem' }}>▶️ {String(block.macroProps?.title || 'Подробнее')}</div>
+            <div style={{ background: 'var(--color-background-alt, #f3f4f6)', padding: '10px 14px', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 6 }}><CaretRight size={14} weight="bold" />{String(block.macroProps?.title || 'Подробнее')}</div>
             {block.macroProps?.children ? <div style={{ padding: '12px 14px', fontSize: '0.9rem' }}>{String(block.macroProps.children)}</div> : null}
           </div>
         );
       }
       if (name === 'mention') {
-        return <span key={index} style={{ background: '#dbeafe', border: '1px solid #3b82f6', borderRadius: 4, padding: '2px 8px', fontSize: '0.85rem', color: '#1e40af' }}>👤 {String(block.macroProps?.name || block.macroProps?.user || '')}</span>;
+        return <span key={index} style={{ background: '#dbeafe', border: '1px solid #3b82f6', borderRadius: 4, padding: '2px 8px', fontSize: '0.85rem', color: '#1e40af', display: 'inline-flex', alignItems: 'center', gap: 4 }}><User size={13} weight="fill" />{String(block.macroProps?.name || block.macroProps?.user || '')}</span>;
       }
       if (name === 'quote' || name === 'blockquote') {
         return <blockquote key={index} style={{ borderLeft: '4px solid var(--color-text-muted, #e5e7eb)', paddingLeft: 16, margin: '12px 0', color: 'var(--color-text-secondary, #4a5568)', fontStyle: 'italic' }}>{String(block.macroProps?.children || block.macroProps?.text || '')}</blockquote>;
@@ -107,7 +116,7 @@ function renderBlock(block: PageBlock, index: number): React.ReactNode {
       if (name === 'decision') {
         return (
           <div key={index} style={{ border: '1px solid var(--color-primary, #667eea)', borderRadius: 8, padding: '12px 16px', marginBottom: 12 }}>
-            <div style={{ fontWeight: 600, color: 'var(--color-primary, #667eea)', marginBottom: 6 }}>🎯 Решение</div>
+            <div style={{ fontWeight: 600, color: 'var(--color-primary, #667eea)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Target size={16} weight="fill" />Решение</div>
             {block.macroProps?.description ? <p style={{ margin: 0, color: 'var(--color-text, #1a1a2e)' }}>{String(block.macroProps.description)}</p> : null}
           </div>
         );
@@ -116,7 +125,7 @@ function renderBlock(block: PageBlock, index: number): React.ReactNode {
         const src = String(block.macroProps?.src || block.macroProps?.url || '');
         return src ? (
           <div key={index} style={{ borderRadius: 8, overflow: 'hidden', marginBottom: 12, border: '1px solid var(--color-text-muted, #e5e7eb)' }}>
-            <div style={{ padding: '8px 12px', background: 'var(--color-background-alt, #f3f4f6)', fontSize: '0.85rem', color: 'var(--color-text-secondary, #4a5568)' }}>🎥 {String(block.macroProps?.title || 'Video')}</div>
+            <div style={{ padding: '8px 12px', background: 'var(--color-background-alt, #f3f4f6)', fontSize: '0.85rem', color: 'var(--color-text-secondary, #4a5568)', display: 'flex', alignItems: 'center', gap: 6 }}><VideoCamera size={14} weight="fill" />{String(block.macroProps?.title || 'Video')}</div>
             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
               <iframe src={src} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }} allowFullScreen title={String(block.macroProps?.title || 'Video')} />
             </div>
@@ -126,7 +135,7 @@ function renderBlock(block: PageBlock, index: number): React.ReactNode {
       // Generic macro fallback
       return (
         <div key={index} style={{ background: 'var(--color-background-alt, #f3f4f6)', border: '1px solid var(--color-text-muted, #e5e7eb)', borderRadius: 6, padding: '10px 14px', marginBottom: 8, fontSize: '0.88rem', color: 'var(--color-text-secondary, #4a5568)' }}>
-          <strong>{MACRO_ICONS[name] || '🔧'} {String(block.macroName)}</strong>
+          <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{MACRO_ICONS[name] || <Wrench size={16} weight="fill" />} {String(block.macroName)}</strong>
           {block.macroProps && Object.keys(block.macroProps).length > 0 && (
             <div style={{ marginTop: 4, fontSize: '0.8rem', opacity: 0.75 }}>
               {Object.entries(block.macroProps).slice(0, 3).map(([k, v]) => `${k}: ${String(v)}`).join(' · ')}
@@ -208,7 +217,7 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
       }}>
         {/* Header */}
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-text-muted, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          <span style={{ fontSize: '1.4rem' }}>🤖</span>
+          <span style={{ display: 'inline-flex', color: 'var(--color-primary)' }}><Robot size={24} weight="duotone" /></span>
           <div style={{ flex: 1 }}>
             <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text, #1a1a2e)' }}>AI Ассистент</h2>
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary, #6b7280)' }}>
@@ -217,8 +226,8 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             {step === 'preview' && (
-              <button onClick={handleRegenerate} style={{ padding: '6px 14px', background: 'var(--color-background-alt, #f3f4f6)', border: '1px solid var(--color-text-muted, #e5e7eb)', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-text-secondary, #6b7280)' }}>
-                🔄 Заново
+              <button onClick={handleRegenerate} style={{ padding: '6px 14px', background: 'var(--color-background-alt, #f3f4f6)', border: '1px solid var(--color-text-muted, #e5e7eb)', borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-text-secondary, #6b7280)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <ArrowsClockwise size={15} weight="bold" />Заново
               </button>
             )}
             <button onClick={onClose} style={{ width: 32, height: 32, background: 'var(--color-background-alt, #f3f4f6)', border: '1px solid var(--color-text-muted, #e5e7eb)', borderRadius: 6, cursor: 'pointer', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
@@ -228,8 +237,8 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {error && (
-            <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 8, padding: '12px 16px', marginBottom: 16, color: '#991b1b', fontSize: '0.88rem' }}>
-              ❌ {error}
+            <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 8, padding: '12px 16px', marginBottom: 16, color: '#991b1b', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <WarningCircle size={16} weight="fill" />{error}
             </div>
           )}
 
@@ -257,7 +266,7 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
                 Ctrl+Enter для генерации
               </p>
               <div style={{ marginTop: 16, padding: '12px 14px', background: 'var(--color-background-alt, #f3f4f6)', borderRadius: 8, fontSize: '0.82rem', color: 'var(--color-text-secondary, #6b7280)' }}>
-                💡 <strong>Примеры:</strong> «План спринта Q2 для команды бэкенд», «Онбординг нового сотрудника в отдел маркетинга», «Техническая документация по API авторизации»
+                <Lightbulb size={15} weight="fill" style={{ verticalAlign: '-2px' }} /> <strong>Примеры:</strong> «План спринта Q2 для команды бэкенд», «Онбординг нового сотрудника в отдел маркетинга», «Техническая документация по API авторизации»
               </div>
             </div>
           )}
@@ -323,13 +332,13 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
               onClick={() => void handleGenerate()}
               disabled={generating || !prompt.trim()}
               style={{
-                padding: '9px 20px', background: generating ? '#9ca3af' : '#667eea',
+                padding: '9px 20px', background: generating ? '#9ca3af' : '#2563eb',
                 border: 'none', borderRadius: 7, cursor: generating ? 'not-allowed' : 'pointer',
                 fontSize: '0.9rem', fontWeight: 600, color: '#fff',
                 display: 'flex', alignItems: 'center', gap: 8,
               }}
             >
-              {generating ? '⏳ Генерация...' : '✨ Сгенерировать'}
+              {generating ? <><CircleNotch size={16} weight="bold" className="animate-spin" />Генерация…</> : <><MagicWand size={16} weight="fill" />Сгенерировать</>}
             </button>
           )}
           {step === 'preview' && (
@@ -340,9 +349,10 @@ export default function AIAssistant({ spaces, onClose, onPageCreated, onToast, c
                 padding: '9px 20px', background: saving ? '#9ca3af' : '#22c55e',
                 border: 'none', borderRadius: 7, cursor: saving ? 'not-allowed' : 'pointer',
                 fontSize: '0.9rem', fontWeight: 600, color: '#fff',
+                display: 'flex', alignItems: 'center', gap: 8,
               }}
             >
-              {saving ? '⏳ Сохранение...' : '💾 Сохранить страницу'}
+              {saving ? <><CircleNotch size={16} weight="bold" className="animate-spin" />Сохранение…</> : <><FloppyDisk size={16} weight="fill" />Сохранить страницу</>}
             </button>
           )}
         </div>

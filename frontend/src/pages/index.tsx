@@ -5,6 +5,14 @@ import type { Space, Page, PageBlock } from '../types/api';
 import ThemeToggle from '../components/ThemeToggle';
 import AIAssistant from '../components/AIAssistant';
 import NotificationPanel from '../components/NotificationPanel';
+import {
+  SquaresFour, Bell, MagnifyingGlass, FileText, Sparkle, Gear, Robot,
+  CaretDown, CaretRight, Trash, MagicWand, Rocket, PaperPlaneTilt, CircleNotch,
+  Info, Lightbulb, NotePencil, Warning, CheckCircle, XCircle,
+  User, CalendarBlank, ChartBar, ListBullets, Table, Tag, FolderOpen,
+  Cards, ChartLineUp, Package, Copy, PencilSimple,
+  Target, PushPin, VideoCamera, FileArrowDown,
+} from '@phosphor-icons/react';
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -143,22 +151,24 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
     <>
     <aside style={sidebarStyle} role="navigation" aria-label="Основная навигация">
       <div style={S.logo}>
-        <span>🚀</span>
+        <span style={{ display: 'grid', placeItems: 'center', width: 28, height: 28, borderRadius: 8, background: 'var(--color-primary)', color: '#fff', flexShrink: 0 }}>
+          <SquaresFour size={17} weight="fill" />
+        </span>
         <span style={{ flex: 1 }}>AI Portal</span>
         <button
           onClick={() => setShowNotificationPanel(v => !v)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '2px 6px', borderRadius: 4, color: 'var(--color-text-secondary)' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', padding: '4px', borderRadius: 6, color: 'var(--color-text-secondary)' }}
           title="Уведомления"
           aria-label="Уведомления"
         >
-          🔔
+          <Bell size={18} />
         </button>
         <ThemeToggle />
       </div>
 
       <div style={S.searchWrap}>
-        <label htmlFor="sidebar-search" style={{ marginRight: 6, display: 'flex', alignItems: 'center' }}>
-          <span aria-hidden="true">🔍</span>
+        <label htmlFor="sidebar-search" style={{ marginRight: 6, display: 'flex', alignItems: 'center', color: 'var(--color-text-muted)' }}>
+          <MagnifyingGlass size={16} aria-hidden="true" />
           <span style={srOnly}>Поиск страниц</span>
         </label>
         <input
@@ -202,7 +212,7 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
                 tabIndex={0}
                 aria-pressed={selectedSpace === space.id}
               >
-                <span aria-hidden="true">{selectedSpace === space.id ? '▾' : '▸'}</span>
+                <span aria-hidden="true" style={{ display: 'inline-flex', color: 'var(--color-text-muted)' }}>{selectedSpace === space.id ? <CaretDown size={12} weight="bold" /> : <CaretRight size={12} weight="bold" />}</span>
                 <a
                   href={`/spaces/${space.id}`}
                   style={S.spaceName}
@@ -235,7 +245,7 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
                       aria-selected={selectedPage?.id === page.id}
                       aria-label={page.title}
                     >
-                      📄 {page.title}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><FileText size={15} weight="duotone" style={{ flexShrink: 0, color: 'var(--color-text-muted)' }} />{page.title}</span>
                     </div>
                   )) : <div style={S.emptyHint} aria-live="polite">Нет страниц</div>}
                 </div>
@@ -261,7 +271,7 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
               aria-selected={selectedPage?.id === page.id}
               aria-label={page.title}
             >
-              📄 {page.title}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><FileText size={15} weight="duotone" style={{ flexShrink: 0, color: 'var(--color-text-muted)' }} />{page.title}</span>
             </div>
           )) : <div style={S.emptyHint} aria-live="polite">Ничего не найдено</div>
         )}
@@ -296,13 +306,13 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
           style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={() => setShowAIAssistant(true)}
         >
-          ✨ AI Assistant
+          <Sparkle size={16} weight="fill" />AI Assistant
         </button>
         <button
           style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={() => setShowSettings(true)}
         >
-          ⚙️ Настройки AI
+          <Gear size={16} weight="fill" />Настройки AI
         </button>
       </div>
     </aside>
@@ -351,7 +361,12 @@ const MACRO_STYLES: Record<string, CSSProperties | Record<string, CSSProperties>
   video:   { borderRadius: 8, overflow: 'hidden', margin: '12px 0', border: '1px solid var(--color-text-muted)' },
 };
 
-const MACRO_ICONS: Record<string, string> = { info: 'i️', tip: '💡', note: '📝', warning: '⚠️' };
+const MACRO_ICONS: Record<string, ReactNode> = {
+  info: <Info size={16} weight="fill" />,
+  tip: <Lightbulb size={16} weight="fill" />,
+  note: <NotePencil size={16} weight="fill" />,
+  warning: <Warning size={16} weight="fill" />,
+};
 
 interface ExpandBlockProps {
   title: string;
@@ -363,7 +378,7 @@ function ExpandBlock({ title, children }: ExpandBlockProps) {
   return (
     <div style={MACRO_STYLES.expand}>
       <button onClick={() => setOpen(!open)} style={{ display:'flex',alignItems:'center',gap:8,width:'100%',border:'none',background:'var(--color-background-alt)',padding:'10px 14px',cursor:'pointer',fontSize:'0.9rem',fontWeight:600,color:'var(--color-text-secondary)',textAlign:'left' }}>
-        <span>{open ? '▾' : '▸'}</span> {title}
+        <span style={{ display: 'inline-flex' }}>{open ? <CaretDown size={13} weight="bold" /> : <CaretRight size={13} weight="bold" />}</span> {title}
       </button>
       {open && <div style={{ padding:'12px 14px',borderTop:'1px solid var(--color-text-muted)',fontSize:'0.9rem',color:'var(--color-text)' }}>{children}</div>}
     </div>
@@ -385,7 +400,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     return (
       <div style={style}>
         <strong style={{display:'flex',alignItems:'center',gap:'6px'}}>
-          <span>{MACRO_ICONS[variant] || 'i️'}</span> {String(p.title || variant.charAt(0).toUpperCase() + variant.slice(1))}
+          <span style={{ display: 'inline-flex' }}>{MACRO_ICONS[variant] || <Info size={16} weight="fill" />}</span> {String(p.title || variant.charAt(0).toUpperCase() + variant.slice(1))}
         </strong>
         {p.children ? <p style={{margin:'8px 0 0'}}>{String(p.children)}</p> : null}
       </div>
@@ -408,13 +423,13 @@ function MacroRenderer({ macro }: MacroRendererProps) {
   if (name === 'decision') {
     return (
       <div style={MACRO_STYLES.decision}>
-        <div style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:600,color:'var(--color-primary)',marginBottom:6}}>🎯 Решение</div>
+        <div style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:600,color:'var(--color-primary)',marginBottom:6}}><Target size={16} weight="duotone" />Решение</div>
         {p.description ? <p style={{margin:0,color:'var(--color-text)'}}>{String(p.description)}</p> : null}
         {(Boolean(p.author) || Boolean(p.date) || Boolean(p.status)) && (
           <div style={{marginTop:8,fontSize:'0.82rem',color:'var(--color-text-secondary)',display:'flex',gap:12,flexWrap:'wrap'}}>
-            {(p.author ? <span>👤 {String(p.author)}</span> : null) as React.ReactNode}
-            {(p.date ? <span>📅 {String(p.date)}</span> : null) as React.ReactNode}
-            {(p.status ? <span>📌 {String(p.status)}</span> : null) as React.ReactNode}
+            {(p.author ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><User size={14} weight="fill" />{String(p.author)}</span> : null) as React.ReactNode}
+            {(p.date ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CalendarBlank size={14} weight="fill" />{String(p.date)}</span> : null) as React.ReactNode}
+            {(p.status ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><PushPin size={13} weight="fill" />{String(p.status)}</span> : null) as React.ReactNode}
           </div>
         )}
       </div>
@@ -423,7 +438,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
 
   // Mention
   if (name === 'mention') {
-    return <span style={MACRO_STYLES.mention}>👤 {String(p.name || p.user || p.username)}</span>;
+    return <span style={{ ...MACRO_STYLES.mention, display: 'inline-flex', alignItems: 'center', gap: 4 }}><User size={13} weight="fill" />{String(p.name || p.user || p.username)}</span>;
   }
 
   // Quote
@@ -442,7 +457,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     if (!src) return <div style={{margin:'12px 0',color:'var(--color-text-muted)'}}>Видео не указано</div>;
     return (
       <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}>🎥 {String(p.title || 'Video')}</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}><VideoCamera size={16} weight="duotone" />{String(p.title || 'Video')}</strong>
         <div style={{position:'relative',paddingBottom:'56.25%',height:0,overflow:'hidden',borderRadius:8}}>
           <iframe src={src} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}} allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope" allowFullScreen title={String(p.title||'Video')} />
         </div>
@@ -455,7 +470,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
   if (name === 'toc' || name === 'table_of_contents') {
     return (
       <div style={{background:'var(--color-background-alt)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:'16px',margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:'6px',color:'var(--color-text-secondary)',marginBottom:8}}>📑 Оглавление</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:'6px',color:'var(--color-text-secondary)',marginBottom:8}}><ListBullets size={16} weight="duotone" />Оглавление</strong>
         {p.children ? <ol style={{margin:0,paddingLeft:20,color:'var(--color-text-secondary)'}}>{asNode(p.children)}</ol> : <span style={{color:'var(--color-text-muted)',fontSize:'0.85rem'}}>Автоматическое оглавление</span>}
       </div>
     );
@@ -493,7 +508,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
       });
       return (
         <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
-          <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}>📊 {String(p.title || 'Chart')}</strong>
+          <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}><ChartBar size={16} weight="duotone" />{String(p.title || 'Chart')}</strong>
           <div style={{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
             <svg viewBox="0 0 140 140" style={{width:140,height:140}}>
               {slices.map((s, idx) => <path key={idx} d={s.pathData} fill={s.color} stroke="#fff" strokeWidth="1"/>)}
@@ -515,7 +530,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     const barData = p.data as { values?: number[]; labels?: string[] } | undefined;
     return (
       <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}>📊 {String(p.title || 'Chart')}</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}><ChartBar size={16} weight="duotone" />{String(p.title || 'Chart')}</strong>
         {(barData?.labels || []).map((label, idx) => {
           const maxVal = Math.max(...(barData?.values || [1]));
           const pct = Math.min(((barData?.values?.[idx] || 0) / maxVal) * 100, 100);
@@ -556,7 +571,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     const events = asArray(p.events);
     return (
       <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}>📅 {String(p.title || 'Календарь')}</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}><CalendarBlank size={16} weight="duotone" />{String(p.title || 'Календарь')}</strong>
         {events.map((ev: unknown, idx: number) => {
           const event = ev as { date?: string; title?: string };
           return (
@@ -587,7 +602,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
 
     return (
       <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,color:'var(--color-text-secondary)'}}>🔍 Поиск по порталу</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,color:'var(--color-text-secondary)'}}><MagnifyingGlass size={16} weight="bold" />Поиск по порталу</strong>
         <input
           value={q}
           onChange={e => { setQ(e.target.value); doSearch(e.target.value); }}
@@ -600,7 +615,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
               const result = r as { title?: string; page_title?: string };
               return (
                 <div key={idx} style={{padding:'6px 8px',borderRadius:4,cursor:'pointer',fontSize:'0.9rem',color:'var(--color-text-secondary)'}} onMouseEnter={e => (e.target as HTMLElement).style.background='#f0f0ff'} onMouseLeave={e => (e.target as HTMLElement).style.background='transparent'}>
-                  📄 {result.title || result.page_title}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><FileText size={15} weight="duotone" style={{ flexShrink: 0, color: 'var(--color-text-muted)' }} />{result.title || result.page_title}</span>
                 </div>
               );
             })}
@@ -615,7 +630,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     const props = (p.properties || p) as Record<string, unknown>;
     return (
       <div style={{background:'#f0f9ff',border:'1px solid #bae6fd',borderRadius:8,padding:16,margin:'12px 0'}}>
-        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,color:'#0c4a6e'}}>📋 Свойства страницы</strong>
+        <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,color:'#0c4a6e'}}><ListBullets size={16} weight="duotone" />Свойства страницы</strong>
         <div style={{display:'grid',gridTemplateColumns:'auto 1fr',gap:'4px 16px',fontSize:'0.85rem'}}>
           {Object.entries(props).filter(([k]) => k !== 'children').map(([k,v]) => (
             <div key={k} style={{display:'contents'}}>
@@ -629,12 +644,18 @@ function MacroRenderer({ macro }: MacroRendererProps) {
   }
 
   // Fallback
-  const icons: Record<string, string> = { chart:'📊', table:'📋', list:'📝', card:'🎴', profile:'👤', calendar:'📅', progress:'📈', children:'📂', labels:'🏷️', default:'📦' };
+  const icons: Record<string, ReactNode> = {
+    chart: <ChartBar size={18} weight="duotone" />, table: <Table size={18} weight="duotone" />,
+    list: <ListBullets size={18} weight="duotone" />, card: <Cards size={18} weight="duotone" />,
+    profile: <User size={18} weight="duotone" />, calendar: <CalendarBlank size={18} weight="duotone" />,
+    progress: <ChartLineUp size={18} weight="duotone" />, children: <FolderOpen size={18} weight="duotone" />,
+    labels: <Tag size={18} weight="duotone" />, default: <Package size={18} weight="duotone" />,
+  };
   const icon = icons[name] || icons.default;
 
   return (
     <div style={{background:'#fffbeb',border:'1px solid #fbbf24',borderRadius:8,padding:16,margin:'12px 0',color:'#92400e'}}>
-      <strong style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:6}}><span style={{fontSize:'1.2rem'}}>{icon}</span> {macro.macroName || 'Macro'}</strong>
+      <strong style={{display:'flex',alignItems:'center',gap:'6px',marginBottom:6}}><span style={{display:'inline-flex'}}>{icon}</span> {macro.macroName || 'Macro'}</strong>
       {p.children ? <p style={{margin:0,color:'var(--color-text-secondary)'}}>{String(p.children)}</p> : null}
       {Object.keys(p).filter(k => !['children','title','label','value'].includes(k)).length > 0 && (
         <pre style={{background:'#fff',borderRadius:4,padding:8,marginTop:8,fontSize:'0.8rem',color:'var(--color-text-secondary)'}}>{JSON.stringify(p, null, 2)}</pre>
@@ -699,8 +720,8 @@ function PageViewer({ page }: PageViewerProps) {
               ` · Обновлено: ${new Date(page.updated_at).toLocaleString('ru-RU')}`}
           </div>
         </div>
-        <button style={R.btnEdit} onClick={() => setDirectEditMode(true)} aria-label="Редактировать контент">✏️ Редактировать</button>
-        <button style={R.btnAiEdit} onClick={() => setEditMode(true)} aria-label="Изменить страницу через ИИ">🤖 Изменить через ИИ</button>
+        <button style={R.btnEdit} onClick={() => setDirectEditMode(true)} aria-label="Редактировать контент">Редактировать</button>
+        <button style={R.btnAiEdit} onClick={() => setEditMode(true)} aria-label="Изменить страницу через ИИ">Изменить через ИИ</button>
       </div>
       {content.length > 0 ? content.map((b, i) => renderBlock({ block: b, index: i })) : <div style={R.noContent}>Страница пуста</div>}
     </div>
@@ -739,7 +760,7 @@ function AIEditor({ page }: AIEditorProps) {
   return (
     <div style={R.editor}>
       <div style={R.editorHeader}>
-        <h3>🤖 Редактирование через ИИ</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><MagicWand size={18} weight="duotone" style={{ color: 'var(--color-primary)' }} />Редактирование через ИИ</h3>
         <button style={R.btnClose} onClick={() => setEditMode(false)}>✕</button>
       </div>
       <div style={R.editorInfo}>Страница: <strong>{page.title}</strong></div>
@@ -748,7 +769,7 @@ function AIEditor({ page }: AIEditorProps) {
         onKeyDown={e => { if (e.ctrlKey && e.key === 'Enter') handleSend(); }} disabled={loading} />
       <button style={{ ...R.btnSend, ...(loading || !prompt.trim() ? R.btnDisabled : {}) }}
         onClick={handleSend} disabled={loading || !prompt.trim()}>
-        {loading ? '⏳ Думаю...' : '🤖 Применить (Ctrl+Enter)'}
+        {loading ? 'Думаю…' : 'Применить (Ctrl+Enter)'}
       </button>
       {log.length > 0 && (
         <div style={R.log}>
@@ -758,7 +779,7 @@ function AIEditor({ page }: AIEditorProps) {
               borderLeft: `3px solid ${entry.type === 'error' ? '#ef4444' : entry.type === 'prompt' ? '#2563eb' : entry.type === 'response' ? '#22c55e' : '#f59e0b'}`
             }}>
               <div style={R.logType}>
-                {entry.type === 'prompt' ? '📝 Промт' : entry.type === 'response' ? '🤖 Ответ' : entry.type === 'error' ? '❌ Ошибка' : 'i️ Инфо'}
+                {entry.type === 'prompt' ? 'Промт' : entry.type === 'response' ? 'Ответ' : entry.type === 'error' ? 'Ошибка' : 'Инфо'}
               </div>
               <pre style={R.logText}>{entry.text}</pre>
             </div>
@@ -856,14 +877,14 @@ function PageEditor({ page }: PageEditorProps) {
   return (
     <div style={R.editor}>
       <div style={R.editorHeader}>
-        <h3>✏️ Редактирование страницы</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><PencilSimple size={18} weight="duotone" style={{ color: 'var(--color-primary)' }} />Редактирование страницы</h3>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             style={{ ...R.btnSave, opacity: saving ? 0.6 : 1 }}
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? '⏳ Сохранение...' : '💾 Сохранить'}
+            {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
           <button style={R.btnClose} onClick={() => setDirectEditMode(false)}>✕ Отмена</button>
         </div>
@@ -1005,8 +1026,8 @@ function BuildPanel() {
         </div>
         {(preview.content || []).map((b, i) => renderBlock({ block: b, index: i }))}
         <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          <button style={R.btnSave} onClick={handleSave} disabled={saved}>{saved ? '✅ Сохранено' : '💾 Сохранить'}</button>
-          <button style={R.btnOutline} onClick={() => { setPreview(null); setPrompt(''); setPreviewPage(null); }}>🗑 Отменить</button>
+          <button style={R.btnSave} onClick={handleSave} disabled={saved}>{saved ? 'Сохранено' : 'Сохранить'}</button>
+          <button style={R.btnOutline} onClick={() => { setPreview(null); setPrompt(''); setPreviewPage(null); }}>Отменить</button>
         </div>
       </div>
     );
@@ -1014,14 +1035,26 @@ function BuildPanel() {
 
   return (
     <div style={R.centered}>
-      <div style={R.buildCard}>
-        <h2 style={{ fontSize: '1.3rem', marginBottom: 4, color: 'var(--color-text)' }}>🤖 Генерация страницы</h2>
-        <p style={{ color: 'var(--color-text-muted)', marginBottom: 16, fontSize: '0.95rem' }}>Опиши, какую страницу создать</p>
-        <textarea style={R.buildPrompt} placeholder="Например: Создай страницу команды с разделами: цели, участники, KPI"
-          value={prompt} onChange={e => setPrompt(e.target.value)} rows={5} />
-        <button style={{ ...R.btnSend, ...(!prompt.trim() || loading ? R.btnDisabled : {}) }}
+      <div className="w-full max-w-[560px] rounded-3xl border border-line bg-surface p-8 shadow-diffusion">
+        <div className="flex items-center gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-accent/10 text-accent">
+            <MagicWand size={22} weight="duotone" />
+          </span>
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-fg">Генерация страницы</h2>
+            <p className="text-sm text-fg-muted">Опишите, какую страницу создать на естественном языке</p>
+          </div>
+        </div>
+        <textarea
+          className="mt-5 min-h-[140px] w-full resize-y rounded-2xl border border-line bg-bg-alt p-3.5 text-[0.95rem] text-fg outline-none transition placeholder:text-fg-muted focus:border-accent focus:ring-4 focus:ring-accent/15"
+          placeholder="Например: создайте страницу команды с разделами — цели, участники, KPI"
+          value={prompt} onChange={e => setPrompt(e.target.value)} rows={5}
+        />
+        <button
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold tracking-tight text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
           onClick={handleBuild} disabled={!prompt.trim() || loading}>
-          {loading ? '⏳ Генерация...' : '🤖 Сгенерировать'}
+          {loading ? <CircleNotch size={16} weight="bold" className="animate-spin" /> : <MagicWand size={16} weight="fill" />}
+          {loading ? 'Генерация…' : 'Сгенерировать'}
         </button>
       </div>
     </div>
@@ -1033,7 +1066,9 @@ function BuildPanel() {
 function Welcome() {
   return (
     <div style={R.welcome}>
-      <div style={{ fontSize: '3rem', marginBottom: 12 }}>🚀</div>
+      <span style={{ display: 'inline-grid', placeItems: 'center', width: 64, height: 64, borderRadius: 18, background: 'var(--color-primary-light)', color: 'var(--color-primary)', marginBottom: 16 }}>
+        <Rocket size={30} weight="duotone" />
+      </span>
       <h2 style={{ marginBottom: 8, color: 'var(--color-text)' }}>Добро пожаловать в AI Portal</h2>
       <p style={{ color: 'var(--color-text-muted)', maxWidth: 400, textAlign: 'center' }}>
         Создай пространство слева, затем сгенерируй страницу через ИИ
@@ -1104,7 +1139,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
         }}>
           <div style={{ padding: '16px', borderBottom: '1px solid var(--color-text-muted)' }}>
             <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              📑 Оглавление
+              <ListBullets size={15} weight="duotone" />Оглавление
             </strong>
             {headings.length > 0 ? (
               <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -1130,7 +1165,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
 
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-text-muted)' }}>
             <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              ℹ️ Информация
+              <Info size={15} weight="duotone" />Информация
             </strong>
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.82rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1155,9 +1190,9 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
               ⚡ Действия
             </strong>
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <button style={sidebarBtnStyle} onClick={() => alert('Копирование страницы — в разработке')}>📋 Копировать страницу</button>
-              <button style={sidebarBtnStyle} onClick={() => alert('Экспорт — в разработке')}>📥 Экспорт в PDF</button>
-              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca' }} onClick={() => alert('Удаление — в разработке')}>🗑 Удалить</button>
+              <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Копирование страницы — в разработке')}><Copy size={16} weight="duotone" />Копировать страницу</button>
+              <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Экспорт — в разработке')}><FileArrowDown size={16} weight="duotone" />Экспорт в PDF</button>
+              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Удаление — в разработке')}><Trash size={16} weight="duotone" />Удалить</button>
             </div>
           </div>
         </aside>
@@ -1193,7 +1228,14 @@ function Toasts({ toasts, removeToast }: ToastsProps) {
         <div key={t.id} style={{
           ...S.toast, borderLeft: `4px solid ${t.type === 'success' ? '#22c55e' : t.type === 'error' ? '#ef4444' : '#f59e0b'}`
         }}>
-          <span>{t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : '⚠️'} {t.message}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+            {t.type === 'success'
+              ? <CheckCircle size={17} weight="fill" style={{ color: '#16a34a', flexShrink: 0 }} />
+              : t.type === 'error'
+                ? <XCircle size={17} weight="fill" style={{ color: '#dc2626', flexShrink: 0 }} />
+                : <Warning size={17} weight="fill" style={{ color: '#d97706', flexShrink: 0 }} />}
+            {t.message}
+          </span>
           <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: '1.2rem' }}
             onClick={() => removeToast(t.id)}>✕</button>
         </div>

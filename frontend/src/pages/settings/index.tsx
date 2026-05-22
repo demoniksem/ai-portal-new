@@ -2,6 +2,7 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import { Globe, Robot, Brain, Desktop, Gear, WarningCircle, CheckCircle, Lightbulb, Eye, EyeSlash } from '@phosphor-icons/react';
 import styles from '../../styles/AISettings.module.css';
 
 const API = typeof window !== 'undefined'
@@ -30,11 +31,11 @@ async function api<T = unknown>(
 }
 
 // Provider config
-const PROVIDER_LABELS: Record<string, { icon: string; label: string }> = {
-  openrouter: { icon: '🌐', label: 'OpenRouter (Recommended — Free models available)' },
-  openai: { icon: '🤖', label: 'OpenAI (GPT-4, GPT-4o)' },
-  anthropic: { icon: '🧠', label: 'Anthropic (Claude)' },
-  local: { icon: '💻', label: 'Local / Custom Endpoint' },
+const PROVIDER_LABELS: Record<string, { icon: React.ReactNode; label: string }> = {
+  openrouter: { icon: <Globe size={24} weight="duotone" />, label: 'OpenRouter (Recommended — Free models available)' },
+  openai: { icon: <Robot size={24} weight="duotone" />, label: 'OpenAI (GPT-4, GPT-4o)' },
+  anthropic: { icon: <Brain size={24} weight="duotone" />, label: 'Anthropic (Claude)' },
+  local: { icon: <Desktop size={24} weight="duotone" />, label: 'Local / Custom Endpoint' },
 };
 
 const PROVIDER_HINTS: Record<string, string> = {
@@ -175,7 +176,7 @@ export default function AISettings() {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loadingContent}>
-          <div className={styles.loadingIcon}>⚙️</div>
+          <div className={styles.loadingIcon}><Gear size={28} weight="duotone" /></div>
           <div className={styles.loadingText}>Loading settings...</div>
         </div>
       </div>
@@ -191,11 +192,11 @@ export default function AISettings() {
         <div className={styles.topBar}>
           <Link href="/" className={styles.backLink}>← Back to Portal</Link>
           <span style={{ color: 'var(--color-border)' }}>|</span>
-          <span className={styles.pageTitle}>⚙️ AI Settings</span>
+          <span className={styles.pageTitle} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Gear size={16} weight="duotone" />AI Settings</span>
         </div>
 
         <div className={styles.main}>
-          <h1 className={styles.heading}>🤖 AI Settings</h1>
+          <h1 className={styles.heading}>AI Settings</h1>
           <p className={styles.subheading}>
             Configure your AI provider, model, and generation parameters for the entire company.
           </p>
@@ -244,9 +245,10 @@ export default function AISettings() {
               <button
                 onClick={() => setShowApiKey(!showApiKey)}
                 className={styles.togglePassword}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                 aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
               >
-                {showApiKey ? '🙈 Hide' : '👁 Show'}
+                {showApiKey ? <><EyeSlash size={15} weight="duotone" />Hide</> : <><Eye size={15} weight="duotone" />Show</>}
               </button>
             </div>
             {settings?.hasApiKey && !apiKey && (
@@ -344,14 +346,14 @@ export default function AISettings() {
 
           {/* Actions */}
           {error && (
-            <div className={`${styles.alert} ${styles.alertError}`}>
-              ❌ {error}
+            <div className={`${styles.alert} ${styles.alertError}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <WarningCircle size={16} weight="fill" />{error}
             </div>
           )}
 
           {saved && (
-            <div className={`${styles.alert} ${styles.alertSuccess}`}>
-              ✅ Settings saved successfully!
+            <div className={`${styles.alert} ${styles.alertSuccess}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <CheckCircle size={16} weight="fill" />Settings saved successfully!
             </div>
           )}
 
@@ -361,12 +363,12 @@ export default function AISettings() {
               disabled={saving}
               className={`${styles.btn} ${styles.btnPrimary}`}
             >
-              {saving ? '💾 Saving...' : '💾 Save Settings'}
+              {saving ? 'Saving…' : 'Save Settings'}
             </button>
           </div>
 
           <div className={styles.tipBox}>
-            <div className={styles.tipTitle}>💡 Tip</div>
+            <div className={styles.tipTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Lightbulb size={15} weight="fill" />Tip</div>
             <div className={styles.tipText}>
               OpenRouter offers free models (marked "Free") that don't require payment.
               For higher rate limits, add credits at <strong>openrouter.ai</strong>.

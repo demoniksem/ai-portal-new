@@ -3,6 +3,12 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axios from 'axios';
 import nextDynamic from 'next/dynamic';
+import {
+  ChartBar, Table, ListBullets, Cards, User, CalendarBlank, ChartLineUp, Package,
+  NotePencil, TextT, Trash, WarningCircle, ClockCounterClockwise, Paperclip,
+  Image as ImageIcon, FileText, PencilSimple, ArrowLeft,
+} from '@phosphor-icons/react';
+import type { ReactNode } from 'react';
 import styles from '../../styles/Home.module.css';
 
 // TipTap requires browser APIs — load client-side only
@@ -155,15 +161,15 @@ function renderBlock(block: Block, i: number) {
         </div>
       );
     case 'macro':
-      const macroIcons: Record<string, string> = {
-        'chart': '📊',
-        'table': '📋',
-        'list': '📝',
-        'card': '🎴',
-        'profile': '👤',
-        'calendar': '📅',
-        'progress': '📈',
-        'default': '📦'
+      const macroIcons: Record<string, ReactNode> = {
+        'chart': <ChartBar size={22} weight="duotone" />,
+        'table': <Table size={22} weight="duotone" />,
+        'list': <ListBullets size={22} weight="duotone" />,
+        'card': <Cards size={22} weight="duotone" />,
+        'profile': <User size={22} weight="duotone" />,
+        'calendar': <CalendarBlank size={22} weight="duotone" />,
+        'progress': <ChartLineUp size={22} weight="duotone" />,
+        'default': <Package size={22} weight="duotone" />,
       };
       const macroName = block.macroName || 'macro';
       const icon = macroIcons[macroName.toLowerCase()] || macroIcons['default'];
@@ -175,7 +181,7 @@ function renderBlock(block: Block, i: number) {
         >
           <div>
             <strong style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.5rem' }}>{icon}</span>
+              <span style={{ display: 'inline-flex' }}>{icon}</span>
               {macroName.charAt(0).toUpperCase() + macroName.slice(1)}
             </strong>
             {block.macroProps && Object.keys(block.macroProps).length > 0 && (
@@ -388,7 +394,7 @@ function EditableBlock({ block, index, onChange, onDelete, onMoveUp, onMoveDown,
               fontSize: '0.8rem',
             }}
           >
-            🗑 Удалить
+            <Trash size={13} weight="duotone" style={{ verticalAlign: '-2px', marginRight: 4 }} />Удалить
           </button>
         </div>
       </div>
@@ -568,12 +574,12 @@ function EditableBlock({ block, index, onChange, onDelete, onMoveUp, onMoveDown,
                   cursor: 'pointer',
                 }}
               >
-                <option value="chart">📊 Chart</option>
-                <option value="progress">📈 Progress</option>
-                <option value="calendar">📅 Calendar</option>
-                <option value="info">ℹ️ Info Panel</option>
-                <option value="tip">💡 Tip Panel</option>
-                <option value="warning">⚠️ Warning Panel</option>
+                <option value="chart">Chart</option>
+                <option value="progress">Progress</option>
+                <option value="calendar">Calendar</option>
+                <option value="info">Info Panel</option>
+                <option value="tip">Tip Panel</option>
+                <option value="warning">Warning Panel</option>
               </select>
             </div>
             <div style={{
@@ -605,11 +611,11 @@ interface AddBlockButtonProps {
 function AddBlockMenu({ onAdd }: AddBlockButtonProps) {
   const [show, setShow] = useState(false);
 
-  const types: { type: Block['type']; label: string; icon: string }[] = [
-    { type: 'text', label: 'Текстовый блок', icon: '📝' },
-    { type: 'heading', label: 'Заголовок', icon: '🔤' },
-    { type: 'table', label: 'Таблица', icon: '📋' },
-    { type: 'macro', label: 'Макрос', icon: '📦' },
+  const types: { type: Block['type']; label: string; icon: ReactNode }[] = [
+    { type: 'text', label: 'Текстовый блок', icon: <NotePencil size={16} weight="duotone" /> },
+    { type: 'heading', label: 'Заголовок', icon: <TextT size={16} weight="duotone" /> },
+    { type: 'table', label: 'Таблица', icon: <Table size={16} weight="duotone" /> },
+    { type: 'macro', label: 'Макрос', icon: <Package size={16} weight="duotone" /> },
   ];
 
   return (
@@ -1086,7 +1092,7 @@ export default function PageView() {
             <span className={styles.breadcrumbCurrent}>Ошибка</span>
           </div>
           <div className={styles.emptyState}>
-            <div className={styles.emptyStateIcon}>❌</div>
+            <div className={styles.emptyStateIcon} style={{ display: 'inline-flex' }}><WarningCircle size={40} weight="duotone" /></div>
             <div className={styles.emptyStateTitle}>Не удалось загрузить страницу</div>
             <div className={styles.emptyStateText}>{error || 'Страница не найдена'}</div>
             <div style={{ marginTop: '24px' }}>
@@ -1138,7 +1144,7 @@ export default function PageView() {
                 background: '#f9fafb',
               }}>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#1f2937' }}>📜 История версий</h2>
+                  <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#1f2937', display: 'flex', alignItems: 'center', gap: 8 }}><ClockCounterClockwise size={18} weight="duotone" />История версий</h2>
                   <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: '#6b7280' }}>
                     Выберите версию для просмотра или отката
                   </p>
@@ -1200,8 +1206,8 @@ export default function PageView() {
                             {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                           {version.created_by_username && (
-                            <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                              👤 {version.created_by_username}
+                            <div style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <User size={12} weight="fill" />{version.created_by_username}
                             </div>
                           )}
                           {isSelected && (
@@ -1222,7 +1228,7 @@ export default function PageView() {
                                   opacity: isRollingBack ? 0.7 : 1,
                                 }}
                               >
-                                {isRollingBack ? '⏳ Откат...' : '↩ Откатить'}
+                                {isRollingBack ? 'Откат…' : '↩ Откатить'}
                               </button>
                             </div>
                           )}
@@ -1236,7 +1242,7 @@ export default function PageView() {
                 <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
                   {!selectedVersion ? (
                     <div style={{ textAlign: 'center', color: '#9ca3af', marginTop: 80 }}>
-                      <div style={{ fontSize: '3rem', marginBottom: 16 }}>👈</div>
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, color: '#9ca3af' }}><ArrowLeft size={40} weight="duotone" /></div>
                       <p style={{ fontSize: '0.95rem' }}>Выберите версию слева,<br/>чтобы увидеть её содержимое</p>
                     </div>
                   ) : !selectedVersionContent ? (
@@ -1329,14 +1335,14 @@ export default function PageView() {
               onClick={handleSave}
               disabled={saving}
             >
-              {saving ? '⏳ Сохранение...' : '💾 Сохранить'}
+              {saving ? 'Сохранение…' : 'Сохранить'}
             </button>
             <button
               className={styles.btnSecondary}
               onClick={handleOpenVersions}
               title="История версий"
             >
-              📜 История
+              <ClockCounterClockwise size={15} weight="duotone" style={{ verticalAlign: '-3px', marginRight: 6 }} />История
             </button>
             <button
               className={styles.btnSecondary}
@@ -1407,7 +1413,7 @@ export default function PageView() {
             borderBottom: '1px solid #e5e7eb',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '1.1rem' }}>📎</span>
+              <span style={{ display: 'inline-flex', color: 'var(--color-text-secondary)' }}><Paperclip size={17} weight="duotone" /></span>
               <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#374151' }}>
                 Вложения
               </span>
@@ -1467,14 +1473,14 @@ export default function PageView() {
                     gap: 6,
                   }}
                 >
-                  {attachmentsUploading ? '⏳ Загрузка...' : '⬆️ Прикрепить файл'}
+                  {attachmentsUploading ? 'Загрузка…' : <><Paperclip size={15} weight="bold" />Прикрепить файл</>}
                 </button>
               </div>
 
               {/* Attachment list */}
               {attachmentsLoading ? (
                 <div style={{ color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center', padding: '16px 0' }}>
-                  ⏳ Загрузка вложений...
+                  Загрузка вложений…
                 </div>
               ) : attachments.length === 0 ? (
                 <div style={{ color: '#9ca3af', fontSize: '0.9rem', textAlign: 'center', padding: '16px 0' }}>
@@ -1484,7 +1490,7 @@ export default function PageView() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {attachments.map((att) => {
                     const isImage = att.mime_type?.startsWith('image/');
-                    const icon = isImage ? '🖼️' : att.mime_type?.includes('pdf') ? '📄' : '📎';
+                    const icon = isImage ? <ImageIcon size={16} weight="duotone" /> : att.mime_type?.includes('pdf') ? <FileText size={16} weight="duotone" /> : <Paperclip size={16} weight="duotone" />;
                     return (
                       <div
                         key={att.id}
@@ -1561,14 +1567,16 @@ export default function PageView() {
           <button
             className={styles.btnPrimary}
             onClick={handleEdit}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
-            ✏️ Редактировать
+            <PencilSimple size={15} weight="duotone" />Редактировать
           </button>
           <button
             className={styles.btnDanger}
             onClick={handleDelete}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
-            🗑 Удалить
+            <Trash size={15} weight="duotone" />Удалить
           </button>
           <button
             className={styles.btnSecondary}
