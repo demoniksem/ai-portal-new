@@ -83,6 +83,69 @@ async function resolveAiConfig(userId: string | undefined, companyId: string | u
   return config;
 }
 
+// Providers that speak the Anthropic Messages protocol (e.g. MiniMax's
+// Anthropic-compatible endpoint at https://api.minimax.io/anthropic).
+const ANTHROPIC_PROTOCOL_PROVIDERS = new Set(['minimax', 'anthropic']);
+
+interface LlmResult { ok: boolean; status: number; text: string; error?: string; }
+
+// Single chat completion. Handles both the OpenAI chat/completions protocol
+// (openrouter, openai) and the Anthropic Messages protocol (minimax, anthropic),
+// honoring a custom apiBaseUrl for the latter. Returns the assistant text.
+async function llmComplete(opts: {
+  provider: string; apiKey: string; apiBaseUrl?: string; model: string;
+  system: string; user: string; temperature: number; maxTokens: number;
+}): Promise<LlmResult> {
+  const { provider, apiKey, apiBaseUrl, model, system, user, temperature, maxTokens } = opts;
+
+  if (ANTHROPIC_PROTOCOL_PROVIDERS.has(provider)) {
+    const base = (apiBaseUrl || 'https://api.minimax.io/anthropic').replace(/\/+$/, '');
+    const resp = await fetch(`${base}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model, max_tokens: maxTokens, temperature,
+        system,
+        messages: [{ role: 'user', content: user }],
+      }),
+    });
+    if (!resp.ok) return { ok: false, status: resp.status, text: '', error: await resp.text() };
+    const data = await resp.json() as { content?: Array<{ type?: string; text?: string }> };
+    // Reasoning models (e.g. MiniMax-M2) emit a `thinking` block before `text`;
+    // keep only the text blocks.
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text || '').join('');
+    return { ok: true, status: 200, text };
+  }
+
+  const apiUrl = provider === 'openrouter'
+    ? 'https://openrouter.ai/api/v1/chat/completions'
+    : provider === 'openai'
+    ? 'https://api.openai.com/v1/chat/completions'
+    : null;
+  if (!apiUrl) return { ok: false, status: 0, text: '', error: `Provider '${provider}' is not yet supported for generation.` };
+
+  const resp = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(provider === 'openrouter' ? { 'HTTP-Referer': 'http://localhost:3000', 'X-Title': 'AI Portal' } : {}),
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      temperature, max_tokens: maxTokens,
+    }),
+  });
+  if (!resp.ok) return { ok: false, status: resp.status, text: '', error: await resp.text() };
+  const data = await resp.json() as { choices?: Array<{ message?: { content?: string } }> };
+  return { ok: true, status: 200, text: data.choices?.[0]?.message?.content || '' };
+}
+
 const AI_SYSTEM_PROMPT = `Ты — AI-архитектор страниц для корпоративного портала. Твоя задача — превратить текстовый промпт пользователя в JSON-спецификацию страницы.
 
 Формат ответа — ТОЛЬКО JSON, без пояснений. Структура:
@@ -140,7 +203,7 @@ router.post('/build', authMiddleware, aiLimiter, validate(aiBuildSchema), async 
   const companyId = (req as any).user?.companyId as string | undefined;
   const requestId = (req as any).requestId || 'unknown';
 
-  const { provider, apiKey, model, temperature, maxTokens } = await resolveAiConfig(userId, companyId);
+  const { provider, apiKey, model, temperature, maxTokens, apiBaseUrl } = await resolveAiConfig(userId, companyId);
 
   if (!apiKey && provider !== 'openclaw') {
     return res.status(503).json({ error: 'AI API key not configured. Go to Settings → AI to set your API key.' });
@@ -213,22 +276,13 @@ router.post('/build', authMiddleware, aiLimiter, validate(aiBuildSchema), async 
   }
 
   const freeFallbackModels = ['qwen/qwen3.6-plus:free', 'google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.1-8b-instruct:free'];
-  const modelsToTry = [model, ...freeFallbackModels.filter(m => m !== model)];
+  // Free-model fallbacks only make sense for OpenRouter; other providers
+  // (openai, minimax, anthropic) use exactly the configured model.
+  const modelsToTry = provider === 'openrouter' ? [model, ...freeFallbackModels.filter(m => m !== model)] : [model];
   let lastError = '';
 
   for (const mdl of modelsToTry) {
     try {
-      const reqBody = {
-        model: mdl,
-        messages: [
-          { role: 'system', content: AI_SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
-        temperature,
-        max_tokens: maxTokens
-      };
-
-      let response;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) {
           const delay = attempt * 3000;
@@ -236,46 +290,26 @@ router.post('/build', authMiddleware, aiLimiter, validate(aiBuildSchema), async 
           await new Promise(r => setTimeout(r, delay));
         }
 
-        const apiUrl = provider === 'openrouter'
-          ? 'https://openrouter.ai/api/v1/chat/completions'
-          : provider === 'openai'
-          ? 'https://api.openai.com/v1/chat/completions'
-          : null;
-
-        if (!apiUrl) {
-          lastError = `Provider '${provider}' is not yet supported for generation.`;
-          break;
-        }
-
-        const headers = {
-          'Content-Type': 'application/json',
-          ...(provider === 'openrouter' ? { 'HTTP-Referer': 'http://localhost:3000', 'X-Title': 'AI Portal' } : {}),
-          'Authorization': `Bearer ${apiKey}`,
-        };
-
-        response = await fetch(apiUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(reqBody)
+        const result = await llmComplete({
+          provider, apiKey, apiBaseUrl, model: mdl,
+          system: AI_SYSTEM_PROMPT, user: prompt, temperature, maxTokens,
         });
 
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('Retry-After');
-          const waitMs = retryAfter ? parseInt(retryAfter) * 1000 : 4000;
-          logger.warn({ msg: `AI 429 on ${mdl}`, waitMs, requestId });
-          await new Promise(r => setTimeout(r, waitMs));
+        if (result.status === 429) {
+          logger.warn({ msg: `AI 429 on ${mdl}`, requestId });
+          await new Promise(r => setTimeout(r, 4000));
           continue;
         }
 
-        if (!response.ok) {
-          const errText = await response.text();
-          logger.error({ msg: `AI error (${mdl})`, status: response.status, errText, requestId });
-          lastError = `AI API error: ${response.status}`;
+        if (!result.ok) {
+          logger.error({ msg: `AI error (${mdl})`, status: result.status, errText: result.error, requestId });
+          lastError = result.error && /not yet supported/.test(result.error)
+            ? result.error
+            : (result.status ? `AI API error: ${result.status}` : (result.error || 'AI call failed'));
           break;
         }
 
-        const data = await response.json() as { choices?: Array<{ message?: { content?: string } }>; [key: string]: unknown };
-        let rawContent = data.choices?.[0]?.message?.content || '';
+        let rawContent = result.text;
 
         rawContent = (rawContent as string).replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/```\s*$/, '');
 
@@ -353,69 +387,43 @@ router.post('/build-board', authMiddleware, async (req: Request, res: Response) 
 - Отвечай НА РУССКОМ языке
 - ВАЛИДНЫЙ JSON, без markdown, без backtick`;
 
-  const { provider, apiKey, model, temperature, maxTokens } = await resolveAiConfig(userId, (req as any).user?.companyId);
+  const { provider, apiKey, model, temperature, maxTokens, apiBaseUrl } = await resolveAiConfig(userId, (req as any).user?.companyId);
 
   if (!apiKey && provider !== 'openclaw') {
     return res.status(503).json({ error: 'AI API key not configured. Go to Settings → AI to set your API key.' });
   }
 
   const freeFallbackModels = ['qwen/qwen3.6-plus:free', 'google/gemini-2.0-flash-exp:free', 'meta-llama/llama-3.1-8b-instruct:free'];
-  const modelsToTry = [model, ...freeFallbackModels.filter(m => m !== model)];
+  // Free-model fallbacks only make sense for OpenRouter; other providers
+  // (openai, minimax, anthropic) use exactly the configured model.
+  const modelsToTry = provider === 'openrouter' ? [model, ...freeFallbackModels.filter(m => m !== model)] : [model];
   let lastError = '';
 
   for (const mdl of modelsToTry) {
     try {
-      const reqBody = {
-        model: mdl,
-        messages: [
-          { role: 'system', content: BOARD_SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
-        temperature,
-        max_tokens: maxTokens
-      };
-
-      let response;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) {
           await new Promise(r => setTimeout(r, attempt * 3000));
         }
 
-        const apiUrl = provider === 'openrouter'
-          ? 'https://openrouter.ai/api/v1/chat/completions'
-          : provider === 'openai'
-          ? 'https://api.openai.com/v1/chat/completions'
-          : null;
-
-        if (!apiUrl) {
-          lastError = `Provider '${provider}' is not yet supported.`;
-          break;
-        }
-
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          ...(provider === 'openrouter' ? { 'HTTP-Referer': 'http://localhost:3000', 'X-Title': 'AI Portal' } : {}),
-          'Authorization': `Bearer ${apiKey}`,
-        };
-
-        response = await fetch(apiUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(reqBody)
+        const result = await llmComplete({
+          provider, apiKey, apiBaseUrl, model: mdl,
+          system: BOARD_SYSTEM_PROMPT, user: prompt, temperature, maxTokens,
         });
 
-        if (response.status === 429) {
+        if (result.status === 429) {
           await new Promise(r => setTimeout(r, 4000));
           continue;
         }
 
-        if (!response.ok) {
-          lastError = `AI API error: ${response.status}`;
+        if (!result.ok) {
+          lastError = result.error && /not yet supported/.test(result.error)
+            ? result.error
+            : (result.status ? `AI API error: ${result.status}` : (result.error || 'AI call failed'));
           break;
         }
 
-        const data = await response.json() as { choices?: { message?: { content?: string } }[] };
-        let rawContent = data.choices?.[0]?.message?.content || '';
+        let rawContent = result.text;
 
         rawContent = (rawContent as string).replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
 
