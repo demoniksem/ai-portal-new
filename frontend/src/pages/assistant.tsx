@@ -124,7 +124,7 @@ export default function AssistantPage() {
   async function loadConfig(): Promise<void> {
     try {
       const token = getToken();
-      const data = await fetchAI<AIConfig>('/api/settings/ai', undefined, token);
+      const data = await fetchAI<AIConfig>('/api/admin/ai-config', undefined, token);
       setConfig(data);
     } catch {
       // non-critical

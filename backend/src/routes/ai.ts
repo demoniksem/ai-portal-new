@@ -92,11 +92,13 @@ interface LlmResult { ok: boolean; status: number; text: string; error?: string;
 // Single chat completion. Handles both the OpenAI chat/completions protocol
 // (openrouter, openai) and the Anthropic Messages protocol (minimax, anthropic),
 // honoring a custom apiBaseUrl for the latter. Returns the assistant text.
+type ChatMessage = { role: string; content: string };
+
 async function llmComplete(opts: {
   provider: string; apiKey: string; apiBaseUrl?: string; model: string;
-  system: string; user: string; temperature: number; maxTokens: number;
+  messages: ChatMessage[]; system?: string; temperature: number; maxTokens: number;
 }): Promise<LlmResult> {
-  const { provider, apiKey, apiBaseUrl, model, system, user, temperature, maxTokens } = opts;
+  const { provider, apiKey, apiBaseUrl, model, messages, system, temperature, maxTokens } = opts;
 
   if (ANTHROPIC_PROTOCOL_PROVIDERS.has(provider)) {
     const base = (apiBaseUrl || 'https://api.minimax.io/anthropic').replace(/\/+$/, '');
@@ -109,8 +111,9 @@ async function llmComplete(opts: {
       },
       body: JSON.stringify({
         model, max_tokens: maxTokens, temperature,
-        system,
-        messages: [{ role: 'user', content: user }],
+        // Anthropic carries the system prompt as a top-level field, not a message.
+        ...(system ? { system } : {}),
+        messages,
       }),
     });
     if (!resp.ok) return { ok: false, status: resp.status, text: '', error: await resp.text() };
@@ -137,7 +140,8 @@ async function llmComplete(opts: {
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      // OpenAI carries the system prompt as the first message.
+      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],
       temperature, max_tokens: maxTokens,
     }),
   });
@@ -292,7 +296,7 @@ router.post('/build', authMiddleware, aiLimiter, validate(aiBuildSchema), async 
 
         const result = await llmComplete({
           provider, apiKey, apiBaseUrl, model: mdl,
-          system: AI_SYSTEM_PROMPT, user: prompt, temperature, maxTokens,
+          system: AI_SYSTEM_PROMPT, messages: [{ role: 'user', content: prompt }], temperature, maxTokens,
         });
 
         if (result.status === 429) {
@@ -408,7 +412,7 @@ router.post('/build-board', authMiddleware, async (req: Request, res: Response) 
 
         const result = await llmComplete({
           provider, apiKey, apiBaseUrl, model: mdl,
-          system: BOARD_SYSTEM_PROMPT, user: prompt, temperature, maxTokens,
+          system: BOARD_SYSTEM_PROMPT, messages: [{ role: 'user', content: prompt }], temperature, maxTokens,
         });
 
         if (result.status === 429) {
@@ -452,6 +456,50 @@ router.post('/build-board', authMiddleware, async (req: Request, res: Response) 
     error: 'AI board generation unavailable. Try again in a moment.',
     hint: lastError,
   });
+});
+
+const CHAT_SYSTEM_PROMPT = 'Ты — полезный AI-ассистент корпоративного портала AI Portal. ' +
+  'Помогай с письмом, анализом, кодом и планированием. Отвечай ясно и по делу; ' +
+  'если пользователь пишет на русском — отвечай на русском.';
+
+// POST /api/ai/chat — multi-turn assistant chat (used by the /assistant page)
+router.post('/chat', authMiddleware, async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id as string | undefined;
+  const companyId = (req as any).user?.companyId as string | undefined;
+  const requestId = (req as any).requestId || 'unknown';
+
+  const { messages } = req.body as { messages?: ChatMessage[] };
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'messages array is required' });
+  }
+  // Keep only user/assistant turns with non-empty string content; cap history.
+  const cleaned = messages
+    .filter(m => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-20)
+    .map(m => ({ role: m.role, content: m.content }));
+  if (cleaned.length === 0 || cleaned[cleaned.length - 1].role !== 'user') {
+    return res.status(400).json({ error: 'last message must be from the user' });
+  }
+
+  const { provider, apiKey, model, temperature, maxTokens, apiBaseUrl } = await resolveAiConfig(userId, companyId);
+  if (!apiKey && provider !== 'openclaw') {
+    return res.status(400).json({ error: 'AI не настроен. Добавьте ключ провайдера в Настройках AI.' });
+  }
+
+  try {
+    const result = await llmComplete({
+      provider, apiKey, apiBaseUrl, model,
+      system: CHAT_SYSTEM_PROMPT, messages: cleaned, temperature, maxTokens,
+    });
+    if (!result.ok) {
+      logger.error({ msg: 'AI chat error', status: result.status, errText: result.error, requestId });
+      return res.status(502).json({ error: 'AI-ассистент недоступен. Попробуйте позже.', hint: (result.error || '').slice(0, 200) });
+    }
+    return res.json({ response: result.text });
+  } catch (e) {
+    logger.error({ msg: 'AI chat exception', error: (e as Error).message, requestId });
+    return res.status(500).json({ error: 'AI chat failed' });
+  }
 });
 
 export default router;

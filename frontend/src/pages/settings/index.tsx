@@ -2,7 +2,7 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Globe, Robot, Brain, Desktop, Gear, WarningCircle, CheckCircle, Lightbulb, Eye, EyeSlash } from '@phosphor-icons/react';
+import { Globe, Robot, Brain, Desktop, Gear, WarningCircle, CheckCircle, Lightbulb, Eye, EyeSlash, Sparkle } from '@phosphor-icons/react';
 import styles from '../../styles/AISettings.module.css';
 
 const API = typeof window !== 'undefined'
@@ -35,6 +35,7 @@ const PROVIDER_LABELS: Record<string, { icon: React.ReactNode; label: string }> 
   openrouter: { icon: <Globe size={24} weight="duotone" />, label: 'OpenRouter (Recommended — Free models available)' },
   openai: { icon: <Robot size={24} weight="duotone" />, label: 'OpenAI (GPT-4, GPT-4o)' },
   anthropic: { icon: <Brain size={24} weight="duotone" />, label: 'Anthropic (Claude)' },
+  minimax: { icon: <Sparkle size={24} weight="duotone" />, label: 'MiniMax (M2 — Anthropic-совместимый)' },
   local: { icon: <Desktop size={24} weight="duotone" />, label: 'Local / Custom Endpoint' },
 };
 
@@ -42,6 +43,7 @@ const PROVIDER_HINTS: Record<string, string> = {
   openrouter: 'OpenRouter aggregates many AI providers. Free models available. Get key at openrouter.ai',
   openai: 'Official OpenAI API. Requires API key from platform.openai.com',
   anthropic: 'Anthropic Claude models. Requires API key from console.anthropic.com',
+  minimax: 'MiniMax via the Anthropic-compatible endpoint. Get a key at api.minimax.io.',
   local: 'Connect to a locally running AI model (Ollama, LM Studio, etc.)',
 };
 
@@ -49,6 +51,7 @@ const LOCAL_PROVIDER_HINTS: Record<string, string> = {
   openrouter: 'Format: https://openrouter.ai/api/v1/chat/completions',
   openai: 'Format: https://api.openai.com/v1/chat/completions',
   anthropic: 'Format: https://api.anthropic.com/v1/messages',
+  minimax: 'Base URL: https://api.minimax.io/anthropic (the endpoint appends /v1/messages)',
   local: 'Format: http://localhost:11434/v1/chat/completions (Ollama default)',
 };
 
@@ -71,6 +74,9 @@ const AI_PROVIDER_MODELS: Record<string, Array<{ id: string; name: string }>> = 
     { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
     { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' },
     { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku' },
+  ],
+  minimax: [
+    { id: 'MiniMax-M2', name: 'MiniMax M2' },
   ],
   local: [
     { id: 'local-model', name: 'Local Model (custom endpoint)' },
@@ -106,6 +112,7 @@ export default function AISettings() {
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [model, setModel] = useState('');
+  const [apiBaseUrl, setApiBaseUrl] = useState('');
   const [temperature, setTemperature] = useState(0.7);
   const [maxTokens, setMaxTokens] = useState(4000);
   const [availableModels, setAvailableModels] = useState<AIModel[]>(AI_PROVIDER_MODELS.openrouter);
@@ -130,6 +137,7 @@ export default function AISettings() {
       setModel(data.model || AI_PROVIDER_MODELS[cfgProvider]?.[0]?.id || '');
       setTemperature(data.temperature ?? 0.7);
       setMaxTokens(data.maxTokens ?? 4000);
+      setApiBaseUrl(data.apiBaseUrl || '');
       setAvailableModels(AI_PROVIDER_MODELS[cfgProvider] || AI_PROVIDER_MODELS.openrouter);
     } catch (e: unknown) {
       setError('Failed to load settings: ' + (e instanceof Error ? e.message : String(e)));
@@ -143,8 +151,12 @@ export default function AISettings() {
     const models = AI_PROVIDER_MODELS[newProvider] || [];
     setAvailableModels(models);
     setModel(models[0]?.id || '');
+    if (newProvider === 'minimax' && !apiBaseUrl) setApiBaseUrl('https://api.minimax.io/anthropic');
     setSaved(false);
   }
+
+  // Providers that need an explicit base URL.
+  const needsBaseUrl = provider === 'minimax' || provider === 'local';
 
   async function handleSave(e: FormEvent): Promise<void> {
     e.preventDefault();
@@ -160,6 +172,7 @@ export default function AISettings() {
         model,
         temperature,
         maxTokens,
+        apiBaseUrl: needsBaseUrl ? (apiBaseUrl.trim() || null) : null,
       }, token);
       setSettings(data);
       setApiKey('');
@@ -286,6 +299,22 @@ export default function AISettings() {
               />
             )}
             <div className={styles.modelHint}>{LOCAL_PROVIDER_HINTS[provider]}</div>
+
+            {needsBaseUrl && (
+              <div style={{ marginTop: 16 }}>
+                <label className={styles.formLabel} style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: '0.9rem' }}>
+                  API Base URL
+                </label>
+                <input
+                  type="text"
+                  value={apiBaseUrl}
+                  onChange={e => { setApiBaseUrl(e.target.value); setSaved(false); }}
+                  placeholder={provider === 'minimax' ? 'https://api.minimax.io/anthropic' : 'http://localhost:11434/v1'}
+                  className={styles.input}
+                  aria-label="API base URL"
+                />
+              </div>
+            )}
           </div>
 
           {/* Generation Parameters */}
