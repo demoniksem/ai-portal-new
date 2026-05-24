@@ -3,7 +3,7 @@
 .page {
   display: flex;
   min-height: 100vh;
-  background: var(--color-bg);
+  background: var(--color-background);
 }
 
 .sidebar {
@@ -52,12 +52,12 @@
 }
 
 .navLink:hover {
-  background: var(--color-bg-secondary);
+  background: var(--color-surface-hover);
   color: var(--color-text);
 }
 
 .navLinkActive {
-  background: var(--color-primary-bg);
+  background: var(--color-primary-light);
   color: var(--color-primary);
   font-weight: 600;
 }
@@ -106,8 +106,9 @@
 .statCard {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 16px;
   padding: 20px;
+  box-shadow: 0 20px 40px -18px rgba(15, 23, 42, 0.06);
 }
 
 .statLabel {
@@ -136,9 +137,10 @@
 .tableWrapper {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 16px;
   overflow: hidden;
   margin-bottom: 24px;
+  box-shadow: 0 20px 40px -18px rgba(15, 23, 42, 0.06);
 }
 
 .table {
@@ -154,7 +156,7 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: var(--color-bg);
+  background: var(--color-background);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -171,7 +173,7 @@
 }
 
 .table tr:hover td {
-  background: var(--color-bg-secondary);
+  background: var(--color-surface-hover);
 }
 
 /* Buttons */
@@ -239,7 +241,7 @@
   border: 1px solid var(--color-border);
   border-radius: 7px;
   font-size: 0.9rem;
-  background: var(--color-bg);
+  background: var(--color-background);
   color: var(--color-text);
   font-family: inherit;
   outline: none;
@@ -256,7 +258,7 @@
   border: 1px solid var(--color-border);
   border-radius: 7px;
   font-size: 0.9rem;
-  background: var(--color-bg);
+  background: var(--color-background);
   color: var(--color-text);
   font-family: inherit;
   resize: vertical;
@@ -273,12 +275,12 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(15, 23, 42, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
 }
 
 .modal {
@@ -317,8 +319,8 @@
 }
 
 .badgeSuperAdmin {
-  background: #7c3aed22;
-  color: #7c3aed;
+  background: #47556922;
+  color: #475569;
 }
 
 .badgeAdmin {
@@ -419,7 +421,8 @@
 .section {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 20px 40px -18px rgba(15, 23, 42, 0.06);
 }

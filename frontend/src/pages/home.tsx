@@ -694,18 +694,19 @@ export default function Home() {
 const W: Record<string, React.CSSProperties> = {
   widget: {
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
-    borderRadius: 12,
+    border: '1px solid var(--color-border)',
+    borderRadius: 16,
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
+    boxShadow: '0 20px 40px -18px rgba(15, 23, 42, 0.06)',
   },
   widgetHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '14px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     background: 'var(--color-background-alt)',
     flexWrap: 'wrap',
     gap: 8,
@@ -726,14 +727,14 @@ const W: Record<string, React.CSSProperties> = {
   },
   widgetFooter: {
     padding: '8px 16px',
-    borderTop: '1px solid var(--color-text-muted)',
+    borderTop: '1px solid var(--color-border)',
     fontSize: '0.78rem',
     color: 'var(--color-text-muted)',
     background: 'var(--color-background-alt)',
   },
   select: {
     padding: '4px 8px',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     fontSize: '0.82rem',
     background: 'var(--color-surface)',
@@ -742,7 +743,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   refreshBtn: {
     background: 'none',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '4px 8px',
@@ -776,7 +777,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   taskCard: {
     padding: '12px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     cursor: 'pointer',
     transition: 'background 0.15s',
   },
@@ -833,7 +834,7 @@ const W: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 10,
     padding: '10px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
   },
   activityDot: {
     width: 8,
@@ -865,7 +866,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   notifItem: {
     padding: '10px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     cursor: 'pointer',
   },
   notifTitle: {
@@ -896,7 +897,7 @@ const W: Record<string, React.CSSProperties> = {
   markReadBtn: {
     fontSize: '0.78rem',
     background: 'none',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '3px 8px',
@@ -921,7 +922,7 @@ const W: Record<string, React.CSSProperties> = {
   calendarDay: {
     aspectRatio: '1',
     padding: '3px',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 4,
     display: 'flex',
     flexDirection: 'column',
@@ -947,7 +948,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   calendarLegend: {
     padding: '8px 12px',
-    borderTop: '1px solid var(--color-text-muted)',
+    borderTop: '1px solid var(--color-border)',
     background: 'var(--color-background-alt)',
   },
   statsRow: {
@@ -960,10 +961,11 @@ const W: Record<string, React.CSSProperties> = {
     flex: 1,
     minWidth: 120,
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
-    borderRadius: 10,
-    padding: '14px 16px',
+    border: '1px solid var(--color-border)',
+    borderRadius: 14,
+    padding: '16px 18px',
     borderLeft: '3px solid var(--color-active-nav)',
+    boxShadow: '0 20px 40px -18px rgba(15, 23, 42, 0.06)',
   },
   statNum: {
     fontSize: '1.8rem',
@@ -979,7 +981,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   navBtn: {
     background: 'var(--color-background-alt)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '4px 10px',
@@ -1001,7 +1003,7 @@ const H: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     padding: '16px 24px',
     background: 'var(--color-surface)',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     flexWrap: 'wrap',
     gap: 12,
   },
@@ -1018,7 +1020,8 @@ const H: Record<string, React.CSSProperties> = {
   },
   pageTitle: {
     fontSize: '1.4rem',
-    fontWeight: 800,
+    fontWeight: 700,
+    letterSpacing: '-0.01em',
     color: 'var(--color-text)',
     margin: 0,
   },
@@ -1029,7 +1032,7 @@ const H: Record<string, React.CSSProperties> = {
   },
   notifBtn: {
     background: 'var(--color-background-alt)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 8,
     cursor: 'pointer',
     padding: '8px 12px',
@@ -1052,7 +1055,8 @@ const H: Record<string, React.CSSProperties> = {
     right: 0,
     bottom: 0,
     zIndex: 1000,
-    background: 'rgba(0,0,0,0.3)',
+    background: 'rgba(15, 23, 42, 0.22)',
+    backdropFilter: 'blur(4px)',
   },
   notifPanel: {
     position: 'absolute',
@@ -1061,8 +1065,8 @@ const H: Record<string, React.CSSProperties> = {
     width: 380,
     maxHeight: '80vh',
     zIndex: 1001,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-    borderRadius: 12,
+    boxShadow: '0 32px 64px -24px rgba(15, 23, 42, 0.16)',
+    borderRadius: 16,
     overflow: 'hidden',
   },
   main: {
@@ -1082,7 +1086,7 @@ const H: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 8,
     cursor: 'pointer',
     fontSize: '0.85rem',

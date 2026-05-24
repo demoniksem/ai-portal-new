@@ -1196,7 +1196,7 @@ export default function PageView() {
                             borderBottom: '1px solid #e5e7eb',
                             cursor: 'pointer',
                             background: isSelected ? '#eef2ff' : '#fff',
-                            borderLeft: isSelected ? '3px solid #667eea' : '3px solid transparent',
+                            borderLeft: isSelected ? '3px solid #2563eb' : '3px solid transparent',
                           }}
                         >
                           <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginBottom: 4 }}>
@@ -1305,7 +1305,7 @@ export default function PageView() {
               style={{
                 width: '100%',
                 padding: '10px 14px',
-                border: '2px solid #667eea',
+                border: '2px solid #2563eb',
                 borderRadius: 8,
                 fontSize: '1.25rem',
                 fontWeight: 600,

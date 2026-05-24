@@ -11,7 +11,7 @@ import {
   Info, Lightbulb, NotePencil, Warning, CheckCircle, XCircle,
   User, CalendarBlank, ChartBar, ListBullets, Table, Tag, FolderOpen,
   Cards, ChartLineUp, Package, Copy, PencilSimple,
-  Target, PushPin, VideoCamera, FileArrowDown,
+  Target, PushPin, VideoCamera, FileArrowDown, Lightning,
 } from '@phosphor-icons/react';
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -137,7 +137,7 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
 
   const sidebarStyle: React.CSSProperties = {
     width: 280, minWidth: 280, background: 'var(--color-surface, #fff)',
-    borderRight: isMobile ? 'none' : '1px solid var(--color-text-muted, #e5e7eb)',
+    borderRight: isMobile ? 'none' : '1px solid var(--color-border)',
     display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%',
     ...(isMobile ? {
       position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 2000,
@@ -301,15 +301,15 @@ function Sidebar({ isMobile, open, setOpen }: SidebarProps) {
       )}
 
       {/* AI Assistant + Settings buttons */}
-      <div style={{ marginTop: 'auto', borderTop: '1px solid var(--color-text-muted)', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ marginTop: 'auto', borderTop: '1px solid var(--color-border)', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <button
-          style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={() => setShowAIAssistant(true)}
         >
-          <Sparkle size={16} weight="fill" />AI Assistant
+          <Sparkle size={16} weight="fill" />AI-ассистент
         </button>
         <button
-          style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ width: '100%', padding: '8px 12px', background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={() => setShowSettings(true)}
         >
           <Gear size={16} weight="fill" />Настройки AI
@@ -353,12 +353,12 @@ const MACRO_STYLES: Record<string, CSSProperties | Record<string, CSSProperties>
     blocked: { background: 'var(--color-status-blocked-bg)', color: 'var(--color-status-blocked-text)', fontSize: '0.82rem', padding: '3px 10px', borderRadius: 9999, fontWeight: 600, display: 'inline-block', marginRight: 6, marginBottom: 4 },
     default: { background: 'var(--color-background-alt)', color: 'var(--color-text-secondary)', fontSize: '0.82rem', padding: '3px 10px', borderRadius: 9999, fontWeight: 600, display: 'inline-block', marginRight: 6, marginBottom: 4 },
   },
-  expand: { background: 'var(--color-background-alt)', border: '1px solid var(--color-text-muted)', borderRadius: 6, margin: '8px 0', overflow: 'hidden' },
+  expand: { background: 'var(--color-background-alt)', border: '1px solid var(--color-border)', borderRadius: 6, margin: '8px 0', overflow: 'hidden' },
   decision: { background: 'var(--color-surface)', border: '1px solid var(--color-primary)', borderRadius: 8, padding: '12px 16px', margin: '12px 0' },
   mention: { background: 'var(--color-panel-info-bg)', border: '1px solid var(--color-panel-info-border)', borderRadius: 4, padding: '2px 8px', fontSize: '0.85rem', color: 'var(--color-panel-info-text)', display: 'inline-block' },
-  quote:   { borderLeft: '4px solid var(--color-text-muted)', padding: '8px 16px', margin: '12px 0', color: 'var(--color-text-secondary)', fontStyle: 'italic', background: 'var(--color-background-alt)' },
-  divider: { borderBottom: '2px solid var(--color-text-muted)', margin: '20px 0' },
-  video:   { borderRadius: 8, overflow: 'hidden', margin: '12px 0', border: '1px solid var(--color-text-muted)' },
+  quote:   { borderLeft: '4px solid var(--color-border)', padding: '8px 16px', margin: '12px 0', color: 'var(--color-text-secondary)', fontStyle: 'italic', background: 'var(--color-background-alt)' },
+  divider: { borderBottom: '2px solid var(--color-border)', margin: '20px 0' },
+  video:   { borderRadius: 8, overflow: 'hidden', margin: '12px 0', border: '1px solid var(--color-border)' },
 };
 
 const MACRO_ICONS: Record<string, ReactNode> = {
@@ -380,7 +380,7 @@ function ExpandBlock({ title, children }: ExpandBlockProps) {
       <button onClick={() => setOpen(!open)} style={{ display:'flex',alignItems:'center',gap:8,width:'100%',border:'none',background:'var(--color-background-alt)',padding:'10px 14px',cursor:'pointer',fontSize:'0.9rem',fontWeight:600,color:'var(--color-text-secondary)',textAlign:'left' }}>
         <span style={{ display: 'inline-flex' }}>{open ? <CaretDown size={13} weight="bold" /> : <CaretRight size={13} weight="bold" />}</span> {title}
       </button>
-      {open && <div style={{ padding:'12px 14px',borderTop:'1px solid var(--color-text-muted)',fontSize:'0.9rem',color:'var(--color-text)' }}>{children}</div>}
+      {open && <div style={{ padding:'12px 14px',borderTop:'1px solid var(--color-border)',fontSize:'0.9rem',color:'var(--color-text)' }}>{children}</div>}
     </div>
   );
 }
@@ -456,7 +456,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     const src = String(p.src || p.url || p.embedUrl || '');
     if (!src) return <div style={{margin:'12px 0',color:'var(--color-text-muted)'}}>Видео не указано</div>;
     return (
-      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
         <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}><VideoCamera size={16} weight="duotone" />{String(p.title || 'Video')}</strong>
         <div style={{position:'relative',paddingBottom:'56.25%',height:0,overflow:'hidden',borderRadius:8}}>
           <iframe src={src} style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',border:'none'}} allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope" allowFullScreen title={String(p.title||'Video')} />
@@ -469,7 +469,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
   // TOC
   if (name === 'toc' || name === 'table_of_contents') {
     return (
-      <div style={{background:'var(--color-background-alt)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:'16px',margin:'12px 0'}}>
+      <div style={{background:'var(--color-background-alt)',border:'1px solid var(--color-border)',borderRadius:8,padding:'16px',margin:'12px 0'}}>
         <strong style={{display:'flex',alignItems:'center',gap:'6px',color:'var(--color-text-secondary)',marginBottom:8}}><ListBullets size={16} weight="duotone" />Оглавление</strong>
         {p.children ? <ol style={{margin:0,paddingLeft:20,color:'var(--color-text-secondary)'}}>{asNode(p.children)}</ol> : <span style={{color:'var(--color-text-muted)',fontSize:'0.85rem'}}>Автоматическое оглавление</span>}
       </div>
@@ -478,7 +478,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
 
   // Code block (macro version)
   if (name === 'code') {
-    return <pre style={{background:'var(--color-background-alt)',border:'1px solid var(--color-text-muted)',borderRadius:6,padding:12,fontSize:'0.85rem',overflowX:'auto',color:'var(--color-text-secondary)'}}>{String(p.code || p.content || p.children || '')}</pre>;
+    return <pre style={{background:'var(--color-background-alt)',border:'1px solid var(--color-border)',borderRadius:6,padding:12,fontSize:'0.85rem',overflowX:'auto',color:'var(--color-text-secondary)'}}>{String(p.code || p.content || p.children || '')}</pre>;
   }
 
   // Chart macro
@@ -489,7 +489,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
       const labels = data?.labels || [];
       const total = values.reduce((a, b) => a + b, 0) || 1;
       let cumAngle = 0;
-      const colors = ['#667eea','#22c55e','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+      const colors = ['#2563eb','#22c55e','#f59e0b','#ef4444','#3b82f6','#0ea5e9','#f43f5e','#14b8a6'];
       const slices = labels.map((label, idx) => {
         const val = values[idx] || 0;
         const pct = val / total;
@@ -507,7 +507,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
         return { label, value: val, pct: Math.round(pct * 100), color: colors[idx % colors.length], pathData };
       });
       return (
-        <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+        <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
           <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}><ChartBar size={16} weight="duotone" />{String(p.title || 'Chart')}</strong>
           <div style={{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
             <svg viewBox="0 0 140 140" style={{width:140,height:140}}>
@@ -529,12 +529,12 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     // bar chart (default)
     const barData = p.data as { values?: number[]; labels?: string[] } | undefined;
     return (
-      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
         <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}><ChartBar size={16} weight="duotone" />{String(p.title || 'Chart')}</strong>
         {(barData?.labels || []).map((label, idx) => {
           const maxVal = Math.max(...(barData?.values || [1]));
           const pct = Math.min(((barData?.values?.[idx] || 0) / maxVal) * 100, 100);
-          const colors = ['#667eea','#22c55e','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+          const colors = ['#2563eb','#22c55e','#f59e0b','#ef4444','#3b82f6','#0ea5e9','#f43f5e','#14b8a6'];
           return (
             <div key={idx} style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
               <span style={{width:120,fontSize:'0.85rem',color:'var(--color-text-secondary)',textAlign:'right'}}>{label}</span>
@@ -554,7 +554,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     const pct = Math.min(Math.max((p.percent as number) || 0, 0), 100);
     const color = pct >= 70 ? '#22c55e' : pct >= 40 ? '#f59e0b' : '#ef4444';
     return (
-      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
         <div style={{display:'flex',justifyContent:'space-between',marginBottom:8}}>
           <strong style={{fontSize:'0.95rem',color:'var(--color-text-secondary)'}}>{String(p.title || 'Прогресс')}</strong>
           <span style={{fontSize:'0.9rem',fontWeight:600,color}}>{pct}%</span>
@@ -570,7 +570,7 @@ function MacroRenderer({ macro }: MacroRendererProps) {
   if (name === 'calendar') {
     const events = asArray(p.events);
     return (
-      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
         <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:12,color:'var(--color-text-secondary)'}}><CalendarBlank size={16} weight="duotone" />{String(p.title || 'Календарь')}</strong>
         {events.map((ev: unknown, idx: number) => {
           const event = ev as { date?: string; title?: string };
@@ -601,13 +601,13 @@ function MacroRenderer({ macro }: MacroRendererProps) {
     };
 
     return (
-      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-text-muted)',borderRadius:8,padding:16,margin:'12px 0'}}>
+      <div style={{background:'var(--color-surface)',border:'1px solid var(--color-border)',borderRadius:8,padding:16,margin:'12px 0'}}>
         <strong style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,color:'var(--color-text-secondary)'}}><MagnifyingGlass size={16} weight="bold" />Поиск по порталу</strong>
         <input
           value={q}
           onChange={e => { setQ(e.target.value); doSearch(e.target.value); }}
           placeholder="Введите запрос..."
-          style={{width:'100%',border:'1px solid var(--color-text-muted)',borderRadius:6,padding:'8px 12px',fontSize:'0.9rem',outline:'none',marginBottom:8,background:'var(--color-surface)',color:'var(--color-text)'}}
+          style={{width:'100%',border:'1px solid var(--color-border)',borderRadius:6,padding:'8px 12px',fontSize:'0.9rem',outline:'none',marginBottom:8,background:'var(--color-surface)',color:'var(--color-text)'}}
         />
         {results.length > 0 && (
           <div style={{borderTop:'1px solid #e5e7eb',paddingTop:8}}>
@@ -893,7 +893,7 @@ function PageEditor({ page }: PageEditorProps) {
       <div style={{ marginBottom: 20 }}>
         <input
           style={{
-            width: '100%', padding: '10px 14px', border: '1px solid var(--color-text-muted)',
+            width: '100%', padding: '10px 14px', border: '1px solid var(--color-border)',
             borderRadius: 8, fontSize: '1.25rem', fontWeight: 700,
             boxSizing: 'border-box', outline: 'none', color: 'var(--color-text)', background: 'var(--color-surface)'
           }}
@@ -909,7 +909,7 @@ function PageEditor({ page }: PageEditorProps) {
             <select
               value={block.type}
               onChange={e => updateBlock(index, { type: e.target.value as BlockType })}
-              style={{ padding: '6px 8px', border: '1px solid var(--color-text-muted)', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer', minWidth: 110, background: 'var(--color-surface)', color: 'var(--color-text)' }}
+              style={{ padding: '6px 8px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: '0.85rem', cursor: 'pointer', minWidth: 110, background: 'var(--color-surface)', color: 'var(--color-text)' }}
             >
               <option value="heading">Заголовок</option>
               <option value="text">Текст</option>
@@ -925,7 +925,7 @@ function PageEditor({ page }: PageEditorProps) {
                   onChange={e => updateBlock(index, { text: e.target.value })}
                   placeholder={block.type === 'heading' ? 'Заголовок...' : block.type === 'code' ? 'Код...' : 'Текст...'}
                   style={{
-                    width: '100%', padding: '8px 12px', border: '1px solid var(--color-text-muted)',
+                    width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)',
                     borderRadius: 6, fontSize: '0.9rem', resize: 'vertical',
                     minHeight: block.type === 'heading' ? 40 : 80,
                     boxSizing: 'border-box', fontFamily: block.type === 'code' ? 'monospace' : 'inherit',
@@ -939,7 +939,7 @@ function PageEditor({ page }: PageEditorProps) {
                   onChange={e => updateBlock(index, { items: e.target.value.split('\n').filter(l => l.trim()) })}
                   placeholder="Элементы списка (по одному на строку)"
                   style={{
-                    width: '100%', padding: '8px 12px', border: '1px solid var(--color-text-muted)',
+                    width: '100%', padding: '8px 12px', border: '1px solid var(--color-border)',
                     borderRadius: 6, fontSize: '0.9rem', resize: 'vertical',
                     minHeight: 80, boxSizing: 'border-box', outline: 'none',
                     background: 'var(--color-background-alt)', color: 'var(--color-text)'
@@ -965,7 +965,7 @@ function PageEditor({ page }: PageEditorProps) {
 
       <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
         <button
-          style={{ padding: '8px 16px', background: 'var(--color-background-alt)', border: '1px solid var(--color-text-muted)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)' }}
+          style={{ padding: '8px 16px', background: 'var(--color-background-alt)', border: '1px solid var(--color-border)', borderRadius: 6, cursor: 'pointer', fontSize: '0.88rem', color: 'var(--color-text-secondary)' }}
           onClick={() => addBlock(blocks.length - 1)}
         >
           + Добавить блок
@@ -1122,7 +1122,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
         style={{
           position: 'fixed', right: showSidebar ? '280px' : '0', top: '70px',
           zIndex: 10000, padding: '8px 6px', background: 'var(--color-surface)',
-          border: '1px solid var(--color-text-muted)', borderRadius: '6px 0 0 6px',
+          border: '1px solid var(--color-border)', borderRadius: '6px 0 0 6px',
           cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: '0.85rem',
           boxShadow: '-2px 0 8px rgba(0,0,0,0.05)',
           transition: 'right 0.2s'
@@ -1134,10 +1134,10 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
 
       {showSidebar && (
         <aside style={{
-          width: 280, minWidth: 280, background: 'var(--color-surface)', borderLeft: '1px solid var(--color-text-muted)',
+          width: 280, minWidth: 280, background: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%'
         }}>
-          <div style={{ padding: '16px', borderBottom: '1px solid var(--color-text-muted)' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border)' }}>
             <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <ListBullets size={15} weight="duotone" />Оглавление
             </strong>
@@ -1163,7 +1163,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
             )}
           </div>
 
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-text-muted)' }}>
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
             <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Info size={15} weight="duotone" />Информация
             </strong>
@@ -1187,7 +1187,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
 
           <div style={{ padding: '12px 16px', flex: 1, overflowY: 'auto' }}>
             <strong style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              ⚡ Действия
+              <Lightning size={15} weight="duotone" />Действия
             </strong>
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Копирование страницы — в разработке')}><Copy size={16} weight="duotone" />Копировать страницу</button>
@@ -1203,7 +1203,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
 
 const sidebarBtnStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
-  background: 'var(--color-surface)', border: '1px solid var(--color-text-muted)', borderRadius: 6,
+  background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 6,
   cursor: 'pointer', fontSize: '0.82rem', color: 'var(--color-text-secondary)', textAlign: 'left'
 };
 
@@ -1394,14 +1394,14 @@ const styles: Record<string, React.CSSProperties> = {
 const S: Record<string, React.CSSProperties> = {
   logo: {
     padding: '16px 16px 12px', fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text)',
-    borderBottom: '1px solid var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 8,
+    borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 8,
   },
   searchWrap: {
     display: 'flex', alignItems: 'center', padding: '10px 12px',
-    background: 'var(--color-background-alt)', borderBottom: '1px solid var(--color-text-muted)'
+    background: 'var(--color-background-alt)', borderBottom: '1px solid var(--color-border)'
   },
   searchInput: {
-    flex: 1, border: '1px solid var(--color-text-muted)', borderRadius: 6, padding: '6px 10px',
+    flex: 1, border: '1px solid var(--color-border)', borderRadius: 6, padding: '6px 10px',
     fontSize: '0.9rem', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-text)'
   },
   searchClear: {
@@ -1426,7 +1426,7 @@ const S: Record<string, React.CSSProperties> = {
   emptyHint: { padding: '8px 16px', color: 'var(--color-text-muted)', fontSize: '0.85rem', fontStyle: 'italic' },
   btnNewSpace: {
     margin: '8px 12px', padding: '8px 12px', background: 'var(--color-background-alt)',
-    border: '1px dashed var(--color-text-muted)', borderRadius: 6, cursor: 'pointer',
+    border: '1px dashed var(--color-border)', borderRadius: 6, cursor: 'pointer',
     fontSize: '0.85rem', color: 'var(--color-text-secondary)', transition: 'all 0.15s ease',
   },
   btnNewSpaceHover: {
@@ -1434,7 +1434,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   newSpaceForm: { padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 },
   spaceInput: {
-    border: '1px solid var(--color-text-muted)', borderRadius: 6, padding: '6px 10px',
+    border: '1px solid var(--color-border)', borderRadius: 6, padding: '6px 10px',
     fontSize: '0.9rem', outline: 'none', color: 'var(--color-text)'
   },
   btnSave: {
@@ -1442,7 +1442,7 @@ const S: Record<string, React.CSSProperties> = {
     border: 'none', borderRadius: 5, cursor: 'pointer', fontSize: '0.85rem'
   },
   btnCancel: {
-    padding: '5px 8px', background: 'var(--color-background-alt)', border: '1px solid var(--color-text-muted)',
+    padding: '5px 8px', background: 'var(--color-background-alt)', border: '1px solid var(--color-border)',
     borderRadius: 5, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-text-secondary)'
   },
   toastContainer: {
@@ -1451,8 +1451,9 @@ const S: Record<string, React.CSSProperties> = {
   },
   toast: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-    padding: '10px 16px', background: 'var(--color-surface)', borderRadius: 8,
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '0.9rem', minWidth: 280, maxWidth: 400,
+    padding: '10px 16px', background: 'var(--color-surface)', borderRadius: 12,
+    border: '1px solid var(--color-border)',
+    boxShadow: '0 20px 40px -18px rgba(15, 23, 42, 0.16)', fontSize: '0.9rem', minWidth: 280, maxWidth: 400,
     color: 'var(--color-text)'
   },
 };
@@ -1460,7 +1461,7 @@ const S: Record<string, React.CSSProperties> = {
 const R: Record<string, React.CSSProperties> = {
   viewer: { maxWidth: '960px', padding: '20px 16px', margin: '0 auto' },
   viewerHeader: {
-    marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--color-text-muted)',
+    marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--color-border)',
     display: 'flex', justifyContent: 'space-between', alignItems: 'start',
     flexWrap: 'wrap', gap: 12
   },
@@ -1482,25 +1483,25 @@ const R: Record<string, React.CSSProperties> = {
   tableWrap: { overflowX: 'auto', margin: '12px 0' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', color: 'var(--color-text)' },
   list: { paddingLeft: 24, margin: '8px 0', color: 'var(--color-text-secondary)' },
-  code: { background: 'var(--color-background-alt)', border: '1px solid var(--color-text-muted)', borderRadius: 6, padding: 12, fontSize: '0.85rem', overflowX: 'auto', color: 'var(--color-text)' },
+  code: { background: 'var(--color-background-alt)', border: '1px solid var(--color-border)', borderRadius: 6, padding: 12, fontSize: '0.85rem', overflowX: 'auto', color: 'var(--color-text)' },
   noContent: { color: 'var(--color-text-muted)', fontSize: '0.95rem', padding: '32px 0', textAlign: 'center' as const },
   editor: { maxWidth: '960px', padding: 20, margin: '0 auto' },
   editorHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   editorInfo: { color: 'var(--color-text-muted)', fontSize: '0.88rem', marginBottom: 12 },
-  editorPrompt: { width: '100%', padding: '10px 12px', border: '1px solid var(--color-text-muted)', borderRadius: 6, fontSize: '0.9rem', resize: 'vertical', minHeight: 100, marginBottom: 12, boxSizing: 'border-box' as const, background: 'var(--color-surface)', color: 'var(--color-text)' },
+  editorPrompt: { width: '100%', padding: '10px 12px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: '0.9rem', resize: 'vertical', minHeight: 100, marginBottom: 12, boxSizing: 'border-box' as const, background: 'var(--color-surface)', color: 'var(--color-text)' },
   btnSend: { padding: '10px 20px', background: 'var(--color-active-nav)', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 },
   btnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
-  btnClose: { padding: '4px 10px', background: 'var(--color-background-alt)', border: '1px solid var(--color-text-muted)', borderRadius: 4, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-text-secondary)' },
+  btnClose: { padding: '4px 10px', background: 'var(--color-background-alt)', border: '1px solid var(--color-border)', borderRadius: 4, cursor: 'pointer', fontSize: '0.85rem', color: 'var(--color-text-secondary)' },
   log: { marginTop: 16, maxHeight: 400, overflowY: 'auto' as const, display: 'flex', flexDirection: 'column' as const, gap: 8 },
   logEntry: { background: 'var(--color-background-alt)', borderRadius: 6, padding: '8px 12px', fontSize: '0.85rem' },
   logType: { fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: 4 },
   logText: { margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' as const },
   centered: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' },
-  buildCard: { background: 'var(--color-surface)', borderRadius: 16, border: '1px solid var(--color-text-muted)', padding: 32, maxWidth: 560, width: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' },
-  buildPrompt: { width: '100%', padding: '10px 12px', border: '1px solid var(--color-text-muted)', borderRadius: 6, fontSize: '0.9rem', resize: 'vertical', minHeight: 120, marginBottom: 12, boxSizing: 'border-box' as const, fontFamily: 'inherit', background: 'var(--color-surface)', color: 'var(--color-text)' },
+  buildCard: { background: 'var(--color-surface)', borderRadius: 16, border: '1px solid var(--color-border)', padding: 32, maxWidth: 560, width: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' },
+  buildPrompt: { width: '100%', padding: '10px 12px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: '0.9rem', resize: 'vertical', minHeight: 120, marginBottom: 12, boxSizing: 'border-box' as const, fontFamily: 'inherit', background: 'var(--color-surface)', color: 'var(--color-text)' },
   welcome: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: 32 },
   steps: { marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 },
   step: { padding: '10px 20px', background: 'var(--color-primary-light)', borderRadius: 8, fontSize: '0.9rem', color: 'var(--color-primary)', fontWeight: 500 },
   btnSave: { padding: '10px 20px', background: 'var(--color-success)', color: '#fff', border: 'none', borderRadius: 7, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 },
-  btnOutline: { padding: '10px 20px', background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-text-muted)', borderRadius: 7, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 },
+  btnOutline: { padding: '10px 20px', background: 'var(--color-surface)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: 7, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600 },
 };

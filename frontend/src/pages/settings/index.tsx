@@ -2,8 +2,9 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Globe, Robot, Brain, Desktop, Gear, WarningCircle, CheckCircle, Lightbulb, Eye, EyeSlash, Sparkle } from '@phosphor-icons/react';
-import styles from '../../styles/AISettings.module.css';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, Robot, Brain, Desktop, Gear, WarningCircle, CheckCircle, Lightbulb, Eye, EyeSlash, Sparkle, ArrowLeft } from '@phosphor-icons/react';
+import { MotionButton } from '../../components/ui/MotionButton';
 
 const API = typeof window !== 'undefined'
   ? 'http://' + window.location.hostname + ':8081'
@@ -32,27 +33,27 @@ async function api<T = unknown>(
 
 // Provider config
 const PROVIDER_LABELS: Record<string, { icon: React.ReactNode; label: string }> = {
-  openrouter: { icon: <Globe size={24} weight="duotone" />, label: 'OpenRouter (Recommended — Free models available)' },
-  openai: { icon: <Robot size={24} weight="duotone" />, label: 'OpenAI (GPT-4, GPT-4o)' },
-  anthropic: { icon: <Brain size={24} weight="duotone" />, label: 'Anthropic (Claude)' },
-  minimax: { icon: <Sparkle size={24} weight="duotone" />, label: 'MiniMax (M2 — Anthropic-совместимый)' },
-  local: { icon: <Desktop size={24} weight="duotone" />, label: 'Local / Custom Endpoint' },
+  openrouter: { icon: <Globe size={22} weight="duotone" />, label: 'OpenRouter (рекомендуется — есть бесплатные модели)' },
+  openai: { icon: <Robot size={22} weight="duotone" />, label: 'OpenAI (GPT-4, GPT-4o)' },
+  anthropic: { icon: <Brain size={22} weight="duotone" />, label: 'Anthropic (Claude)' },
+  minimax: { icon: <Sparkle size={22} weight="duotone" />, label: 'MiniMax (M2 — совместим с Anthropic)' },
+  local: { icon: <Desktop size={22} weight="duotone" />, label: 'Локальный / свой эндпоинт' },
 };
 
 const PROVIDER_HINTS: Record<string, string> = {
-  openrouter: 'OpenRouter aggregates many AI providers. Free models available. Get key at openrouter.ai',
-  openai: 'Official OpenAI API. Requires API key from platform.openai.com',
-  anthropic: 'Anthropic Claude models. Requires API key from console.anthropic.com',
-  minimax: 'MiniMax via the Anthropic-compatible endpoint. Get a key at api.minimax.io.',
-  local: 'Connect to a locally running AI model (Ollama, LM Studio, etc.)',
+  openrouter: 'OpenRouter объединяет множество провайдеров. Есть бесплатные модели. Ключ — на openrouter.ai',
+  openai: 'Официальный API OpenAI. Нужен ключ с platform.openai.com',
+  anthropic: 'Модели Claude от Anthropic. Нужен ключ с console.anthropic.com',
+  minimax: 'MiniMax через Anthropic-совместимый эндпоинт. Ключ — на api.minimax.io',
+  local: 'Подключение к локальной модели (Ollama, LM Studio и т.п.)',
 };
 
 const LOCAL_PROVIDER_HINTS: Record<string, string> = {
-  openrouter: 'Format: https://openrouter.ai/api/v1/chat/completions',
-  openai: 'Format: https://api.openai.com/v1/chat/completions',
-  anthropic: 'Format: https://api.anthropic.com/v1/messages',
-  minimax: 'Base URL: https://api.minimax.io/anthropic (the endpoint appends /v1/messages)',
-  local: 'Format: http://localhost:11434/v1/chat/completions (Ollama default)',
+  openrouter: 'Формат: https://openrouter.ai/api/v1/chat/completions',
+  openai: 'Формат: https://api.openai.com/v1/chat/completions',
+  anthropic: 'Формат: https://api.anthropic.com/v1/messages',
+  minimax: 'Base URL: https://api.minimax.io/anthropic (эндпоинт добавит /v1/messages)',
+  local: 'Формат: http://localhost:11434/v1/chat/completions (Ollama по умолчанию)',
 };
 
 // Model catalog (mirrors backend AI_PROVIDER_MODELS)
@@ -102,6 +103,18 @@ interface AIModel {
   name: string;
 }
 
+const inputClass =
+  'w-full rounded-xl border border-line bg-bg py-2.5 px-3.5 text-[0.95rem] text-fg ' +
+  'placeholder:text-fg-muted outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/15';
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-accent/10 font-mono text-xs font-semibold text-accent">
+      {n}
+    </span>
+  );
+}
+
 export default function AISettings() {
   const [settings, setSettings] = useState<AIConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,7 +142,6 @@ export default function AISettings() {
   async function loadSettings(): Promise<void> {
     try {
       const token = getToken();
-      // GET /api/admin/ai-config — company-level AI config
       const data = await api<AIConfig>('GET', '/api/admin/ai-config', undefined, token);
       setSettings(data);
       const cfgProvider = data.provider || 'openrouter';
@@ -140,7 +152,7 @@ export default function AISettings() {
       setApiBaseUrl(data.apiBaseUrl || '');
       setAvailableModels(AI_PROVIDER_MODELS[cfgProvider] || AI_PROVIDER_MODELS.openrouter);
     } catch (e: unknown) {
-      setError('Failed to load settings: ' + (e instanceof Error ? e.message : String(e)));
+      setError('Не удалось загрузить настройки: ' + (e instanceof Error ? e.message : String(e)));
     } finally {
       setLoading(false);
     }
@@ -165,7 +177,6 @@ export default function AISettings() {
     setSaving(true);
     try {
       const token = getToken();
-      // POST /api/admin/ai-config — create or update company-level config
       const data = await api<AIConfig>('POST', '/api/admin/ai-config', {
         provider,
         apiKey: apiKey || undefined,
@@ -179,7 +190,7 @@ export default function AISettings() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: unknown) {
-      setError('Save failed: ' + (e instanceof Error ? e.message : String(e)));
+      setError('Не удалось сохранить: ' + (e instanceof Error ? e.message : String(e)));
     } finally {
       setSaving(false);
     }
@@ -187,10 +198,10 @@ export default function AISettings() {
 
   if (loading) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingContent}>
-          <div className={styles.loadingIcon}><Gear size={28} weight="duotone" /></div>
-          <div className={styles.loadingText}>Loading settings...</div>
+      <div className="flex min-h-[100dvh] items-center justify-center bg-bg">
+        <div className="flex flex-col items-center gap-3 text-fg-secondary">
+          <Gear size={28} weight="duotone" className="animate-spin text-accent" style={{ animationDuration: '2.5s' }} />
+          <span className="text-sm">Загрузка настроек…</span>
         </div>
       </div>
     );
@@ -199,210 +210,218 @@ export default function AISettings() {
   return (
     <>
       <Head>
-        <title>AI Settings — AI Portal</title>
+        <title>Настройки ИИ — AI Portal</title>
       </Head>
-      <div className={styles.page}>
-        <div className={styles.topBar}>
-          <Link href="/" className={styles.backLink}>← Back to Portal</Link>
-          <span style={{ color: 'var(--color-border)' }}>|</span>
-          <span className={styles.pageTitle} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Gear size={16} weight="duotone" />AI Settings</span>
-        </div>
-
-        <div className={styles.main}>
-          <h1 className={styles.heading}>AI Settings</h1>
-          <p className={styles.subheading}>
-            Configure your AI provider, model, and generation parameters for the entire company.
+      <div className="min-h-[100dvh] bg-bg">
+        <div className="mx-auto max-w-[760px] px-6 py-10">
+          {/* Header */}
+          <header className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition hover:bg-surface-hover hover:text-fg"
+              title="Назад к порталу"
+              aria-label="Назад к порталу"
+            >
+              <ArrowLeft size={18} weight="bold" />
+            </Link>
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-accent">
+                <Gear size={16} weight="fill" />
+                Конфигурация
+              </div>
+              <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-fg">Настройки ИИ</h1>
+            </div>
+          </header>
+          <p className="mt-3 max-w-[60ch] text-[0.95rem] leading-relaxed text-fg-secondary">
+            Провайдер, модель и параметры генерации для всей компании.
           </p>
 
-          {/* Provider Selection */}
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>
-              <span className={styles.stepNum}>1</span>
-              AI Provider
-            </div>
-            <div className={styles.providerGrid}>
-              {Object.entries(PROVIDER_LABELS).map(([key, { icon, label }]) => (
-                <div
-                  key={key}
-                  onClick={() => handleProviderChange(key)}
-                  className={`${styles.providerCard} ${provider === key ? styles.selected : ''}`}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={e => { if (e.key === 'Enter') handleProviderChange(key); }}
-                  aria-pressed={provider === key}
-                >
-                  <div className={styles.providerIcon}>{icon}</div>
-                  <div className={styles.providerName}>{label}</div>
-                  <div className={styles.providerDesc}>{PROVIDER_HINTS[key]}</div>
+          <form onSubmit={handleSave} className="mt-8 overflow-hidden rounded-2xl border border-line bg-surface shadow-diffusion">
+            <div className="divide-y divide-line">
+              {/* Step 1 — Provider */}
+              <section className="p-6">
+                <div className="flex items-center gap-2.5 text-sm font-semibold text-fg">
+                  <StepBadge n={1} />
+                  Провайдер ИИ
                 </div>
-              ))}
+                <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  {Object.entries(PROVIDER_LABELS).map(([key, { icon, label }]) => {
+                    const active = provider === key;
+                    return (
+                      <button
+                        type="button"
+                        key={key}
+                        onClick={() => handleProviderChange(key)}
+                        aria-pressed={active}
+                        className={`flex flex-col gap-2 rounded-xl border p-4 text-left transition ${
+                          active
+                            ? 'border-accent bg-accent/5 ring-4 ring-accent/15'
+                            : 'border-line bg-bg hover:border-accent/40 hover:bg-surface-hover'
+                        }`}
+                      >
+                        <span className={active ? 'text-accent' : 'text-fg-secondary'}>{icon}</span>
+                        <span className="text-sm font-semibold leading-snug text-fg">{label}</span>
+                        <span className="text-xs leading-relaxed text-fg-muted">{PROVIDER_HINTS[key]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Step 2 — API Key */}
+              <section className="p-6">
+                <div className="flex items-center gap-2.5 text-sm font-semibold text-fg">
+                  <StepBadge n={2} />
+                  API-ключ
+                </div>
+                <p className="mt-2 text-sm text-fg-secondary">{PROVIDER_HINTS[provider]}</p>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={apiKey}
+                    onChange={e => setApiKey(e.target.value)}
+                    placeholder={settings?.hasApiKey ? '•••••••• (уже задан — введите новое значение для замены)' : 'Вставьте ваш API-ключ…'}
+                    className={inputClass}
+                    aria-label="API-ключ"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-bg px-3 text-sm font-medium text-fg-secondary transition hover:bg-surface-hover hover:text-fg"
+                    aria-label={showApiKey ? 'Скрыть ключ' : 'Показать ключ'}
+                  >
+                    {showApiKey ? <><EyeSlash size={15} weight="duotone" />Скрыть</> : <><Eye size={15} weight="duotone" />Показать</>}
+                  </button>
+                </div>
+                {settings?.hasApiKey && !apiKey && (
+                  <div className="mt-2.5 flex items-center gap-1.5 text-sm text-success">
+                    <CheckCircle size={15} weight="fill" />
+                    Ключ уже настроен
+                  </div>
+                )}
+              </section>
+
+              {/* Step 3 — Model */}
+              <section className="p-6">
+                <div className="flex items-center gap-2.5 text-sm font-semibold text-fg">
+                  <StepBadge n={3} />
+                  Модель
+                </div>
+                <div className="mt-4 flex flex-col gap-2">
+                  {availableModels.length > 0 ? (
+                    <select
+                      value={model}
+                      onChange={e => { setModel(e.target.value); setSaved(false); }}
+                      className={inputClass + ' appearance-none'}
+                      aria-label="Выбор модели"
+                    >
+                      {availableModels.map(m => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={model}
+                      onChange={e => { setModel(e.target.value); setSaved(false); }}
+                      placeholder="Идентификатор модели (напр. gpt-4o, claude-3-5-sonnet-20241022)"
+                      className={inputClass}
+                      aria-label="Идентификатор модели"
+                    />
+                  )}
+                  <span className="text-xs text-fg-muted">{LOCAL_PROVIDER_HINTS[provider]}</span>
+                </div>
+
+                {needsBaseUrl && (
+                  <div className="mt-4 flex flex-col gap-2">
+                    <label htmlFor="base-url" className="text-sm font-medium text-fg">API Base URL</label>
+                    <input
+                      id="base-url"
+                      type="text"
+                      value={apiBaseUrl}
+                      onChange={e => { setApiBaseUrl(e.target.value); setSaved(false); }}
+                      placeholder={provider === 'minimax' ? 'https://api.minimax.io/anthropic' : 'http://localhost:11434/v1'}
+                      className={inputClass}
+                      aria-label="API base URL"
+                    />
+                  </div>
+                )}
+              </section>
+
+              {/* Step 4 — Generation params */}
+              <section className="p-6">
+                <div className="flex items-center gap-2.5 text-sm font-semibold text-fg">
+                  <StepBadge n={4} />
+                  Параметры генерации
+                </div>
+
+                <div className="mt-5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-fg">Temperature</span>
+                    <span className="rounded-md bg-bg-alt px-2 py-0.5 font-mono text-fg-secondary">{temperature}</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="2" step="0.05" value={temperature}
+                    onChange={e => { setTemperature(parseFloat(e.target.value)); setSaved(false); }}
+                    className="mt-2.5 w-full accent-accent"
+                    aria-valuemin={0} aria-valuemax={2} aria-valuenow={temperature}
+                  />
+                  <div className="mt-1 flex justify-between text-xs text-fg-muted">
+                    <span>0 — точно</span><span>1 — баланс</span><span>2 — креативно</span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-fg">Max Tokens</span>
+                    <span className="rounded-md bg-bg-alt px-2 py-0.5 font-mono text-fg-secondary">{maxTokens}</span>
+                  </div>
+                  <input
+                    type="range" min="500" max="16000" step="500" value={maxTokens}
+                    onChange={e => { setMaxTokens(parseInt(e.target.value)); setSaved(false); }}
+                    className="mt-2.5 w-full accent-accent"
+                    aria-valuemin={500} aria-valuemax={16000} aria-valuenow={maxTokens}
+                  />
+                  <div className="mt-1 flex justify-between text-xs text-fg-muted">
+                    <span>500 — коротко</span><span>8000 — средне</span><span>16000 — длинно</span>
+                  </div>
+                </div>
+              </section>
             </div>
-          </div>
 
-          {/* API Key */}
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>
-              <span className={styles.stepNum}>2</span>
-              API Key
+            {/* Footer actions */}
+            <div className="flex items-center justify-between gap-4 border-t border-line bg-bg-alt/40 px-6 py-4">
+              <AnimatePresence mode="wait">
+                {error ? (
+                  <motion.div
+                    key="err" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-1.5 text-sm text-danger" role="alert"
+                  >
+                    <WarningCircle size={15} weight="fill" className="shrink-0" />{error}
+                  </motion.div>
+                ) : saved ? (
+                  <motion.div
+                    key="ok" initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center gap-1.5 text-sm text-success"
+                  >
+                    <CheckCircle size={15} weight="fill" className="shrink-0" />Настройки сохранены
+                  </motion.div>
+                ) : <span />}
+              </AnimatePresence>
+              <MotionButton type="submit" loading={saving} className="shrink-0">
+                {saving ? 'Сохранение…' : 'Сохранить'}
+              </MotionButton>
             </div>
-            <p className={styles.hint}>{PROVIDER_HINTS[provider]}</p>
-            <div className={styles.inputWrapper}>
-              <input
-                type={showApiKey ? 'text' : 'password'}
-                value={apiKey}
-                onChange={e => setApiKey(e.target.value)}
-                placeholder={settings?.hasApiKey ? '•••••••• (already set — enter new value to replace)' : 'Paste your API key here...'}
-                className={styles.input}
-                aria-label="API key"
-              />
-              <button
-                onClick={() => setShowApiKey(!showApiKey)}
-                className={styles.togglePassword}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
-              >
-                {showApiKey ? <><EyeSlash size={15} weight="duotone" />Hide</> : <><Eye size={15} weight="duotone" />Show</>}
-              </button>
-            </div>
-            {settings?.hasApiKey && !apiKey && (
-              <div className={styles.apiKeyStatus}>
-                ✓ API key already configured
-              </div>
-            )}
-          </div>
+          </form>
 
-          {/* Model Selection */}
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>
-              <span className={styles.stepNum}>3</span>
-              Model
-            </div>
-            {availableModels.length > 0 ? (
-              <select
-                value={model}
-                onChange={e => { setModel(e.target.value); setSaved(false); }}
-                className={styles.modelSelect}
-                aria-label="Select model"
-              >
-                {availableModels.map(m => (
-                  <option key={m.id} value={m.id}>{m.name}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={model}
-                onChange={e => { setModel(e.target.value); setSaved(false); }}
-                placeholder="Model identifier (e.g., gpt-4o, claude-3-5-sonnet-20241022)"
-                className={styles.input}
-                aria-label="Model identifier"
-              />
-            )}
-            <div className={styles.modelHint}>{LOCAL_PROVIDER_HINTS[provider]}</div>
-
-            {needsBaseUrl && (
-              <div style={{ marginTop: 16 }}>
-                <label className={styles.formLabel} style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: '0.9rem' }}>
-                  API Base URL
-                </label>
-                <input
-                  type="text"
-                  value={apiBaseUrl}
-                  onChange={e => { setApiBaseUrl(e.target.value); setSaved(false); }}
-                  placeholder={provider === 'minimax' ? 'https://api.minimax.io/anthropic' : 'http://localhost:11434/v1'}
-                  className={styles.input}
-                  aria-label="API base URL"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Generation Parameters */}
-          <div className={styles.card}>
-            <div className={styles.cardTitle}>
-              <span className={styles.stepNum}>4</span>
-              Generation Parameters
-            </div>
-
-            <div className={styles.sliderSection}>
-              <div className={styles.sliderLabel}>
-                <span>Temperature</span>
-                <span className={styles.sliderValue}>{temperature}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="2"
-                step="0.05"
-                value={temperature}
-                onChange={e => { setTemperature(parseFloat(e.target.value)); setSaved(false); }}
-                className={styles.slider}
-                aria-valuemin={0}
-                aria-valuemax={2}
-                aria-valuenow={temperature}
-              />
-              <div className={styles.sliderLabels}>
-                <span>0 — Precise</span>
-                <span>1 — Balanced</span>
-                <span>2 — Creative</span>
-              </div>
-            </div>
-
-            <div className={styles.sliderSection}>
-              <div className={styles.sliderLabel}>
-                <span>Max Tokens</span>
-                <span className={styles.sliderValue}>{maxTokens}</span>
-              </div>
-              <input
-                type="range"
-                min="500"
-                max="16000"
-                step="500"
-                value={maxTokens}
-                onChange={e => { setMaxTokens(parseInt(e.target.value)); setSaved(false); }}
-                className={styles.slider}
-                aria-valuemin={500}
-                aria-valuemax={16000}
-                aria-valuenow={maxTokens}
-              />
-              <div className={styles.sliderLabels}>
-                <span>500 — Short</span>
-                <span>8000 — Medium</span>
-                <span>16000 — Long</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          {error && (
-            <div className={`${styles.alert} ${styles.alertError}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <WarningCircle size={16} weight="fill" />{error}
-            </div>
-          )}
-
-          {saved && (
-            <div className={`${styles.alert} ${styles.alertSuccess}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CheckCircle size={16} weight="fill" />Settings saved successfully!
-            </div>
-          )}
-
-          <div className={styles.buttonGroup}>
-            <button
-              onClick={e => { void handleSave(e); }}
-              disabled={saving}
-              className={`${styles.btn} ${styles.btnPrimary}`}
-            >
-              {saving ? 'Saving…' : 'Save Settings'}
-            </button>
-          </div>
-
-          <div className={styles.tipBox}>
-            <div className={styles.tipTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Lightbulb size={15} weight="fill" />Tip</div>
-            <div className={styles.tipText}>
-              OpenRouter offers free models (marked "Free") that don't require payment.
-              For higher rate limits, add credits at <strong>openrouter.ai</strong>.
-              Your API key is stored securely in the database and never displayed after saving.
-              These settings apply to the entire company.
+          {/* Tip */}
+          <div className="mt-5 flex gap-3 rounded-2xl border border-accent/20 bg-accent/[0.06] p-4">
+            <Lightbulb size={18} weight="fill" className="mt-0.5 shrink-0 text-accent" />
+            <div className="text-sm leading-relaxed text-fg-secondary">
+              <span className="font-semibold text-fg">Совет.</span>{' '}
+              У OpenRouter есть бесплатные модели (помечены «Free»), не требующие оплаты.
+              Для бо́льших лимитов добавьте баланс на <strong className="text-fg">openrouter.ai</strong>.
+              Ключ хранится в БД и не показывается после сохранения. Настройки применяются ко всей компании.
             </div>
           </div>
         </div>

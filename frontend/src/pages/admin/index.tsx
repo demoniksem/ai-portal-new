@@ -21,45 +21,45 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <h1 className={styles.pageTitle}>Dashboard</h1>
-      <p className={styles.pageSubtitle}>Company overview and key metrics</p>
+      <h1 className={styles.pageTitle}>Дашборд</h1>
+      <p className={styles.pageSubtitle}>Обзор компании и ключевые метрики</p>
 
-      {loading && <div className={styles.loadingContainer}>Loading stats...</div>}
+      {loading && <div className={styles.loadingContainer}>Загрузка статистики…</div>}
       {error && <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>}
 
       {stats && (
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statIcon}><Users size={26} weight="duotone" /></div>
-            <p className={styles.statLabel}>Users</p>
+            <p className={styles.statLabel}>Пользователи</p>
             <p className={styles.statValue}>{stats.users}</p>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statIcon}><Buildings size={26} weight="duotone" /></div>
-            <p className={styles.statLabel}>Departments</p>
+            <p className={styles.statLabel}>Отделы</p>
             <p className={styles.statValue}>{stats.departments}</p>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statIcon}><Kanban size={26} weight="duotone" /></div>
-            <p className={styles.statLabel}>Boards</p>
+            <p className={styles.statLabel}>Доски</p>
             <p className={styles.statValue}>{stats.boards}</p>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statIcon}><Cards size={26} weight="duotone" /></div>
-            <p className={styles.statLabel}>Cards</p>
+            <p className={styles.statLabel}>Карточки</p>
             <p className={styles.statValue}>{stats.cards}</p>
           </div>
         </div>
       )}
 
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Quick Actions</h2>
+        <h2 className={styles.sectionTitle}>Быстрые действия</h2>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <a href="/admin/users" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Users size={16} weight="duotone" />Manage Users</a>
-          <a href="/admin/departments" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Buildings size={16} weight="duotone" />Manage Departments</a>
-          <a href="/admin/roles" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Lock size={16} weight="duotone" />Manage Roles</a>
-          <a href="/admin/brand" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Palette size={16} weight="duotone" />Brand Settings</a>
-          <a href="/admin/ai-config" className={`${styles.btn} ${styles.btnGhost}`} style={linkStyle}><Robot size={16} weight="duotone" />AI Settings</a>
+          <a href="/admin/users" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Users size={16} weight="duotone" />Пользователи</a>
+          <a href="/admin/departments" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Buildings size={16} weight="duotone" />Отделы</a>
+          <a href="/admin/roles" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Lock size={16} weight="duotone" />Роли</a>
+          <a href="/admin/brand" className={`${styles.btn} ${styles.btnPrimary}`} style={linkStyle}><Palette size={16} weight="duotone" />Брендинг</a>
+          <a href="/admin/ai-config" className={`${styles.btn} ${styles.btnGhost}`} style={linkStyle}><Robot size={16} weight="duotone" />Настройки ИИ</a>
         </div>
       </div>
     </AdminLayout>

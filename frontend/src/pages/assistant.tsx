@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect, useRef, useCallback, FormEvent, KeyboardEvent, type ReactNode } from 'react';
+import { useState, useEffect, useRef, FormEvent, KeyboardEvent, type ReactNode } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Robot, Gear, User, PaperPlaneTilt, Stop, WarningCircle,
+  Robot, Gear, User, PaperPlaneTilt, Stop, WarningCircle, ArrowLeft, Trash,
   FileText, Lightbulb, ArrowsClockwise, ClipboardText,
 } from '@phosphor-icons/react';
-import styles from '@/styles/Assistant.module.css';
 
 const API_BASE = typeof window !== 'undefined' ? 'http://' + window.location.hostname + ':8081' : '';
 
@@ -38,10 +38,10 @@ async function fetchAI<T>(path: string, body?: unknown, token?: string | null): 
 }
 
 const SUGGESTED_PROMPTS: { icon: ReactNode; text: string }[] = [
-  { icon: <FileText size={18} weight="duotone" />, text: 'Help me write a project status report' },
-  { icon: <Lightbulb size={18} weight="duotone" />, text: 'Explain this code snippet' },
-  { icon: <ArrowsClockwise size={18} weight="duotone" />, text: 'Refactor this function for better performance' },
-  { icon: <ClipboardText size={18} weight="duotone" />, text: 'Create a meeting agenda for our team sync' },
+  { icon: <FileText size={20} weight="duotone" />, text: 'Помоги составить отчёт о статусе проекта' },
+  { icon: <Lightbulb size={20} weight="duotone" />, text: 'Объясни этот фрагмент кода' },
+  { icon: <ArrowsClockwise size={20} weight="duotone" />, text: 'Отрефактори функцию ради производительности' },
+  { icon: <ClipboardText size={20} weight="duotone" />, text: 'Собери повестку для командного синка' },
 ];
 
 function formatTime(date: Date): string {
@@ -57,7 +57,6 @@ function parseContent(content: string): React.ReactNode[] {
   let match;
 
   const segments: { type: 'text' | 'code'; content: string; lang?: string }[] = [];
-  let currentText = content;
 
   codeBlockRegex.lastIndex = 0;
   while ((match = codeBlockRegex.exec(content)) !== null) {
@@ -74,7 +73,10 @@ function parseContent(content: string): React.ReactNode[] {
   segments.forEach((seg, i) => {
     if (seg.type === 'code') {
       parts.push(
-        <pre key={i} className={styles.codeBlock}>
+        <pre
+          key={i}
+          className="my-2 overflow-x-auto rounded-xl border border-line bg-bg-alt p-3.5 font-mono text-[0.82rem] leading-relaxed text-fg"
+        >
           <code>{seg.content.trim()}</code>
         </pre>
       );
@@ -87,11 +89,15 @@ function parseContent(content: string): React.ReactNode[] {
         if (match.index > idx) {
           parts2.push(text.slice(idx, match.index));
         }
-        parts2.push(<code key={'ic' + idx} style={{ background: '#f3f4f6', padding: '1px 5px', borderRadius: 4, fontSize: '0.88em' }}>{match[1]}</code>);
+        parts2.push(
+          <code key={'ic' + idx} className="rounded-md bg-bg-alt px-1.5 py-0.5 font-mono text-[0.88em] text-fg">
+            {match[1]}
+          </code>
+        );
         idx = match.index + match[0].length;
       }
       if (idx < text.length) parts2.push(text.slice(idx));
-      if (parts2.length > 0) parts.push(<span key={'t' + i}>{parts2}</span>);
+      if (parts2.length > 0) parts.push(<span key={'t' + i} className="whitespace-pre-wrap">{parts2}</span>);
     }
   });
 
@@ -102,7 +108,6 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [streaming, setStreaming] = useState(false);
   const [config, setConfig] = useState<AIConfig | null>(null);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -190,129 +195,192 @@ export default function AssistantPage() {
 
   const modelLabel = config?.model
     ? config.model.length > 30 ? config.model.slice(0, 30) + '…' : config.model
-    : 'Not configured';
+    : 'Не настроено';
 
   return (
-    <div className={styles.container}>
+    <div className="flex h-[100dvh] flex-col bg-bg">
       {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Link href="/" style={{ textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>← Back</Link>
-          <div className={styles.headerTitle}>
-            <span style={{ display: 'inline-flex', color: 'var(--color-primary)' }}><Robot size={20} weight="duotone" /></span>
-            <span>AI Assistant</span>
-            {config?.model && <span className={styles.modelBadge}>{modelLabel}</span>}
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface/80 px-5 py-3 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition hover:bg-surface-hover hover:text-fg"
+            title="Назад"
+            aria-label="Назад"
+          >
+            <ArrowLeft size={18} weight="bold" />
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent">
+              <Robot size={18} weight="fill" />
+            </span>
+            <span className="font-semibold tracking-tight text-fg">AI-ассистент</span>
+            {config?.model && (
+              <span className="rounded-md bg-bg-alt px-2 py-0.5 font-mono text-xs text-fg-secondary">
+                {modelLabel}
+              </span>
+            )}
           </div>
         </div>
-        <div className={styles.headerRight}>
+        <div className="flex items-center gap-1.5">
           {messages.length > 0 && (
-            <button className={styles.clearBtn} onClick={clearChat} title="Clear chat">Clear</button>
+            <button
+              onClick={clearChat}
+              title="Очистить чат"
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-fg-secondary transition hover:bg-surface-hover hover:text-fg active:scale-[0.98]"
+            >
+              <Trash size={15} weight="bold" />
+              Очистить
+            </button>
           )}
-          <Link href="/settings" className={styles.iconBtn} title="AI Settings"><Gear size={18} /></Link>
+          <Link
+            href="/settings"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-fg-muted transition hover:bg-surface-hover hover:text-fg"
+            title="Настройки ИИ"
+          >
+            <Gear size={18} />
+          </Link>
         </div>
-      </div>
+      </header>
 
       {/* Messages */}
-      <div className={styles.messagesWrapper}>
+      <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className={styles.welcome}>
-            <div className={styles.welcomeIcon}><Robot size={40} weight="duotone" /></div>
-            <h1 className={styles.welcomeTitle}>How can I help you today?</h1>
-            <p className={styles.welcomeSubtitle}>
-              I can assist with writing, analysis, coding, brainstorming, and more.
-              Select a prompt below or type your question.
+          <div className="mx-auto flex min-h-full max-w-[680px] flex-col items-center justify-center px-6 py-12 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ type: 'spring', stiffness: 160, damping: 18 }}
+              className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 text-accent"
+            >
+              <Robot size={34} weight="duotone" />
+            </motion.div>
+            <h1 className="mt-6 text-2xl font-semibold tracking-tight text-fg">
+              Чем могу помочь?
+            </h1>
+            <p className="mt-2 max-w-[46ch] text-[0.95rem] leading-relaxed text-fg-secondary">
+              Помогу с текстами, анализом, кодом и брейнштормом. Выберите подсказку ниже или задайте вопрос.
             </p>
-            <div className={styles.suggestions}>
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } } }}
+              className="mt-8 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2"
+            >
               {SUGGESTED_PROMPTS.map((prompt, i) => (
-                <button
+                <motion.button
                   key={i}
-                  className={styles.suggestionBtn}
+                  variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
                   onClick={() => void sendMessage(prompt.text)}
+                  whileTap={{ scale: 0.98 }}
+                  className="group flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-left text-sm text-fg-secondary transition hover:border-accent/40 hover:bg-surface-hover hover:text-fg"
                 >
-                  <span>{prompt.icon}</span>
-                  <span>{prompt.text}</span>
-                </button>
+                  <span className="text-accent transition group-hover:scale-110">{prompt.icon}</span>
+                  <span className="leading-snug">{prompt.text}</span>
+                </motion.button>
               ))}
-            </div>
+            </motion.div>
           </div>
         ) : (
-          <div className={styles.messages}>
+          <div className="mx-auto flex max-w-[760px] flex-col gap-5 px-5 py-8">
             {messages.map(msg => (
-              <div key={msg.id} className={`${styles.message} ${styles[msg.role]}`}>
-                <div className={`${styles.avatar} ${styles[msg.role]}`}>
-                  {msg.role === 'assistant' ? <Robot size={18} weight="duotone" /> : <User size={18} weight="duotone" />}
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+                className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+              >
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                    msg.role === 'assistant' ? 'bg-accent/10 text-accent' : 'bg-fg/5 text-fg-secondary'
+                  }`}
+                >
+                  {msg.role === 'assistant'
+                    ? <Robot size={18} weight="fill" />
+                    : <User size={18} weight="fill" />}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div className={styles.bubble}>
-                    {parseContent(msg.content || '')}
-                    {msg.role === 'assistant' && loading && (
-                      <div className={styles.loadingDots}>
-                        <div className={styles.loadingDot} />
-                        <div className={styles.loadingDot} />
-                        <div className={styles.loadingDot} />
-                      </div>
-                    )}
+                <div className={`flex min-w-0 flex-col gap-1 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div
+                    className={`max-w-full rounded-2xl px-4 py-2.5 text-[0.95rem] leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'rounded-tr-sm bg-accent text-white'
+                        : 'rounded-tl-sm border border-line bg-surface text-fg'
+                    }`}
+                  >
+                    {msg.content
+                      ? parseContent(msg.content)
+                      : msg.role === 'assistant' && loading && (
+                          <span className="flex items-center gap-1 py-1" aria-label="Печатает…">
+                            {[0, 1, 2].map(d => (
+                              <motion.span
+                                key={d}
+                                className="h-1.5 w-1.5 rounded-full bg-fg-muted"
+                                animate={{ opacity: [0.3, 1, 0.3], y: [0, -2, 0] }}
+                                transition={{ duration: 1, repeat: Infinity, delay: d * 0.15 }}
+                              />
+                            ))}
+                          </span>
+                        )}
                     {msg.role === 'assistant' && loading && msg.content && (
-                      <span className={styles.streamingCursor} />
+                      <span className="ml-0.5 inline-block h-4 w-[2px] animate-pulse bg-accent align-middle" />
                     )}
                   </div>
-                  <div className={styles.timestamp}>{formatTime(msg.timestamp)}</div>
+                  <span className="px-1 font-mono text-[0.7rem] text-fg-muted">{formatTime(msg.timestamp)}</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
-            {error && (
-              <div style={{
-                padding: '12px 16px',
-                background: 'var(--color-error-light)',
-                border: '1px solid var(--color-error)',
-                borderRadius: 8,
-                color: 'var(--color-error)',
-                fontSize: '0.88rem',
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                <WarningCircle size={16} weight="fill" />{error}
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2.5 text-sm text-danger"
+                  role="alert"
+                >
+                  <WarningCircle size={16} weight="fill" className="shrink-0" />
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
       {/* Input Area */}
-      <div className={styles.inputArea}>
-        <div className={styles.inputWrapper}>
-          {config?.model && (
-            <div className={styles.contextIndicator}>
-              <div className={styles.contextDot} />
-              <span>Using {config.model}</span>
-            </div>
-          )}
-          <form className={styles.inputForm} onSubmit={e => { e.preventDefault(); void handleSubmit(); }}>
-            <div className={styles.inputContainer}>
+      <div className="border-t border-line bg-surface/80 px-5 py-4 backdrop-blur-sm">
+        <div className="mx-auto max-w-[760px]">
+          <form onSubmit={handleSubmit} className="flex items-end gap-2.5">
+            <div className="flex flex-1 items-end rounded-2xl border border-line bg-bg px-4 py-2.5 transition focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/15">
               <textarea
                 ref={textareaRef}
-                className={styles.textarea}
+                className="max-h-[200px] w-full resize-none bg-transparent text-[0.95rem] leading-relaxed text-fg outline-none placeholder:text-fg-muted"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything… (Enter to send, Shift+Enter for newline)"
+                placeholder="Спросите что угодно… (Enter — отправить, Shift+Enter — перенос)"
                 rows={1}
                 disabled={loading}
-                aria-label="Message input"
+                aria-label="Поле ввода сообщения"
               />
             </div>
-            <button
+            <motion.button
               type="submit"
-              className={`${styles.sendBtn} ${loading ? styles.stopBtn : ''}`}
+              whileTap={{ scale: 0.94 }}
               disabled={loading || !input.trim()}
-              title={loading ? 'Stop' : 'Send'}
+              title={loading ? 'Генерация…' : 'Отправить'}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                loading ? 'bg-danger hover:bg-danger/90' : 'bg-accent hover:bg-accent-hover'
+              }`}
             >
               {loading ? <Stop size={18} weight="fill" /> : <PaperPlaneTilt size={18} weight="fill" />}
-            </button>
+            </motion.button>
           </form>
-          <div style={{ textAlign: 'center', marginTop: 8, fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
-            AI responses are generated based on your configured model. Results may vary.
-          </div>
+          <p className="mt-2 text-center text-[0.72rem] text-fg-muted">
+            Ответы формирует настроенная модель. Результаты могут различаться.
+          </p>
         </div>
       </div>
     </div>
