@@ -32,7 +32,7 @@ interface PageAttachmentRow {
   file_size: number | null;
   mime_type: string | null;
   uploaded_by: number | null;
-  uploaded_at: Date;
+  created_at: Date;
 }
 
 class PagesRepository {
@@ -168,7 +168,7 @@ class PagesRepository {
 
   async findAttachments(pageId: number): Promise<PageAttachmentRow[]> {
     const result = await pool.query<PageAttachmentRow>(
-      'SELECT * FROM page_attachments WHERE page_id = $1 ORDER BY uploaded_at DESC',
+      'SELECT * FROM page_attachments WHERE page_id = $1 ORDER BY created_at DESC',
       [pageId]
     );
     return result.rows;
