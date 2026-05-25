@@ -19,6 +19,19 @@
 > same endpoint; `card.move` stays catalog-only for now). After Task 6, rebuild backend + verify
 > 403 for under-privileged roles before moving on. Backend tests run on host: `cd backend && npx jest`.
 
+> **PROGRESS (2026-05-25, cont.):** R1 enforcement (Task 6, commit `063a246`) + R2 matrix UI
+> (Task 7 `55252aa`, Task 8 `c260c4e`) are DONE and runtime-verified. Task 6 gates exactly 18
+> mutation routes (spaces/pages/boards/cards/columns create-update-delete); `cards.ts` gained the
+> missing `authMiddleware`; `card.move` left catalog-only as noted. Enforcement verified on the
+> rebuilt backend: guest→403 board.create, employee→403 board.delete, super_admin bypass, and a
+> matrix PATCH toggle is reflected on the next request (cache reload). Task 8 was implemented as
+> TWO TABS on `/admin/roles` ("Пользователи" = existing user-role UI, preserved; "Матрица прав" =
+> new editable grid) — the plan's "replace page body" was overridden because the page already had
+> working functionality. UI verified on dev :3009 AND rebuilt prod :8080 (renders, toggle persists
+> across reload, no React errors). **Task 9 (R3) intentionally SKIPPED:** `requireDepartmentRole`/
+> `requireObjectRole` are used by no route (the fields would be inert), and `UsersRepository.
+> getFullProfile()` already loads dept/object roles — revisit only when a route needs that gating.
+
 ---
 
 ## File Structure
