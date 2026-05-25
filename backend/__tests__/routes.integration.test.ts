@@ -272,7 +272,8 @@ describe('Pages Routes', () => {
 
   beforeAll(() => {
     app = createApp();
-    token = createTestToken();
+    // Use super_admin role so requirePermission checks pass in route-level tests
+    token = createTestToken({ companyRole: 'super_admin' });
   });
 
   describe('GET /api/pages', () => {

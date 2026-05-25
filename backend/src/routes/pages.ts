@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { logger } from '../config/logger';
 import { PagesService } from '../services/pagesService';
 import { CommentsRepository } from '../repositories/comments';
-import { authMiddleware, validate } from '../middleware';
+import { authMiddleware, validate, requirePermission } from '../middleware';
 import { createPageSchema, updatePageSchema, createCommentSchema, updateCommentSchema, rollbackVersionSchema } from '../schemas';
 import multer from 'multer';
 import path from 'path';
@@ -83,7 +83,7 @@ router.get('/:id', authMiddleware, (async (req: Request, res: Response, next: Ne
 }) as any);
 
 // POST /api/pages
-router.post('/', authMiddleware, validate(createPageSchema), (async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', authMiddleware, validate(createPageSchema), requirePermission('page.create'), (async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { title, content, spaceId, parentId, acl } = req.body as unknown as CreatePageBody;
     const page = await pagesService.createPage({ title, content, spaceId: spaceId ?? 1, parentId, acl }, (req as any).user.id);
@@ -95,7 +95,7 @@ router.post('/', authMiddleware, validate(createPageSchema), (async (req: Reques
 }) as any);
 
 // PATCH /api/pages/:id
-router.patch('/:id', authMiddleware, validate(updatePageSchema), (async (req: Request, res: Response, next: NextFunction) => {
+router.patch('/:id', authMiddleware, validate(updatePageSchema), requirePermission('page.update'), (async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { title, content, parentId, acl } = req.body as unknown as UpdatePageBody;
     const result = await pagesService.updatePage(parseInt((req as any).params.id), { title, content, parentId, acl }, (req as any).user.id);
@@ -112,7 +112,7 @@ router.patch('/:id', authMiddleware, validate(updatePageSchema), (async (req: Re
 }) as any);
 
 // DELETE /api/pages/:id (soft delete)
-router.delete('/:id', authMiddleware, (async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', authMiddleware, requirePermission('page.delete'), (async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await pagesService.deletePage(parseInt((req as any).params.id));
 

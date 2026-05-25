@@ -4,7 +4,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { BoardsRepository } from '../repositories/boards';
 import { CardsRepository } from '../repositories/cards';
 import { pool } from '../config';
-import { authMiddleware, validate } from '../middleware';
+import { authMiddleware, validate, requirePermission } from '../middleware';
 import {
   createBoardSchema, updateBoardSchema,
   createColumnSchema, updateColumnSchema, reorderColumnSchema,
@@ -64,7 +64,7 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
 }));
 
 // POST /api/boards
-router.post('/', authMiddleware, validate(createBoardSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post('/', authMiddleware, validate(createBoardSchema), requirePermission('board.create'), asyncHandler(async (req: Request, res: Response) => {
   const body = req.body as { name: string; description?: string; spaceId?: string; departmentId?: string };
   const userId = strParam((req as unknown as { user: { id: string } }).user.id);
   const board = await boardsRepo.create({ ...body, createdBy: userId });
@@ -85,14 +85,14 @@ router.get('/:boardId', authMiddleware, uuid('boardId'), asyncHandler(async (req
 }));
 
 // PATCH /api/boards/:boardId
-router.patch('/:boardId', authMiddleware, uuid('boardId'), validate(updateBoardSchema), asyncHandler(async (req: Request, res: Response) => {
+router.patch('/:boardId', authMiddleware, uuid('boardId'), validate(updateBoardSchema), requirePermission('board.update'), asyncHandler(async (req: Request, res: Response) => {
   const board = await boardsRepo.update((req.params as Params).boardId, req.body as { name?: string; description?: string });
   if (!board) { res.status(404).json({ error: 'Board not found' }); return; }
   res.json(board);
 }));
 
 // DELETE /api/boards/:boardId
-router.delete('/:boardId', authMiddleware, uuid('boardId'), asyncHandler(async (req: Request, res: Response) => {
+router.delete('/:boardId', authMiddleware, uuid('boardId'), requirePermission('board.delete'), asyncHandler(async (req: Request, res: Response) => {
   const deleted = await boardsRepo.delete((req.params as Params).boardId);
   if (!deleted) { res.status(404).json({ error: 'Board not found' }); return; }
   res.json({ deleted: true });
@@ -101,7 +101,7 @@ router.delete('/:boardId', authMiddleware, uuid('boardId'), asyncHandler(async (
 // ─── Columns ──────────────────────────────────────────────────────────────────
 
 // POST /api/boards/:boardId/columns
-router.post('/:boardId/columns', authMiddleware, uuid('boardId'), validate(createColumnSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post('/:boardId/columns', authMiddleware, uuid('boardId'), validate(createColumnSchema), requirePermission('column.manage'), asyncHandler(async (req: Request, res: Response) => {
   const boardId = (req.params as Params).boardId;
   const board = await boardsRepo.findById(boardId);
   if (!board) { res.status(404).json({ error: 'Board not found' }); return; }
@@ -120,14 +120,14 @@ router.get('/columns/:columnId', authMiddleware, uuid('columnId'), asyncHandler(
 }));
 
 // PATCH /api/columns/:columnId
-router.patch('/columns/:columnId', authMiddleware, uuid('columnId'), validate(updateColumnSchema), asyncHandler(async (req: Request, res: Response) => {
+router.patch('/columns/:columnId', authMiddleware, uuid('columnId'), validate(updateColumnSchema), requirePermission('column.manage'), asyncHandler(async (req: Request, res: Response) => {
   const col = await boardsRepo.updateColumn((req.params as Params).columnId, req.body as { name?: string; wipLimit?: number | null });
   if (!col) { res.status(404).json({ error: 'Column not found' }); return; }
   res.json(col);
 }));
 
 // PATCH /api/columns/:columnId/position
-router.patch('/columns/:columnId/position', authMiddleware, uuid('columnId'), validate(reorderColumnSchema), asyncHandler(async (req: Request, res: Response) => {
+router.patch('/columns/:columnId/position', authMiddleware, uuid('columnId'), validate(reorderColumnSchema), requirePermission('column.manage'), asyncHandler(async (req: Request, res: Response) => {
   const body = req.body as { position: number };
   const col = await boardsRepo.reorderColumn((req.params as Params).columnId, body.position);
   if (!col) { res.status(404).json({ error: 'Column not found' }); return; }
@@ -135,7 +135,7 @@ router.patch('/columns/:columnId/position', authMiddleware, uuid('columnId'), va
 }));
 
 // DELETE /api/columns/:columnId
-router.delete('/columns/:columnId', authMiddleware, uuid('columnId'), asyncHandler(async (req: Request, res: Response) => {
+router.delete('/columns/:columnId', authMiddleware, uuid('columnId'), requirePermission('column.manage'), asyncHandler(async (req: Request, res: Response) => {
   const deleted = await boardsRepo.deleteColumn((req.params as Params).columnId);
   if (!deleted) { res.status(404).json({ error: 'Column not found' }); return; }
   res.json({ deleted: true });
@@ -183,7 +183,7 @@ router.get('/:boardId/cards', authMiddleware, uuid('boardId'), asyncHandler(asyn
 }));
 
 // POST /api/cards
-router.post('/cards', authMiddleware, validate(createCardSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post('/cards', authMiddleware, validate(createCardSchema), requirePermission('card.create'), asyncHandler(async (req: Request, res: Response) => {
   const userId = strParam((req as unknown as { user: { id: string } }).user.id);
   const body = req.body as {
     boardId: string; columnId: string; swimlaneId?: string; type?: string;
@@ -212,14 +212,14 @@ router.get('/cards/:cardId', authMiddleware, uuid('cardId'), asyncHandler(async 
 }));
 
 // PATCH /api/cards/:cardId
-router.patch('/cards/:cardId', authMiddleware, uuid('cardId'), validate(updateCardSchema), asyncHandler(async (req: Request, res: Response) => {
+router.patch('/cards/:cardId', authMiddleware, uuid('cardId'), validate(updateCardSchema), requirePermission('card.update'), asyncHandler(async (req: Request, res: Response) => {
   const card = await cardsRepo.update((req.params as Params).cardId, req.body as Parameters<typeof cardsRepo.update>[1]);
   if (!card) { res.status(404).json({ error: 'Card not found' }); return; }
   res.json(card);
 }));
 
 // DELETE /api/cards/:cardId
-router.delete('/cards/:cardId', authMiddleware, uuid('cardId'), asyncHandler(async (req: Request, res: Response) => {
+router.delete('/cards/:cardId', authMiddleware, uuid('cardId'), requirePermission('card.delete'), asyncHandler(async (req: Request, res: Response) => {
   const deleted = await cardsRepo.deleteCard((req.params as Params).cardId);
   if (!deleted) { res.status(404).json({ error: 'Card not found' }); return; }
   res.json({ deleted: true });

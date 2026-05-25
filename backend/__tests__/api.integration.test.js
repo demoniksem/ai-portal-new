@@ -142,7 +142,8 @@ const ADMIN_PASS = 'admin123';
 const ADMIN_ID = 1;
 
 function makeToken(userId = ADMIN_ID, email = ADMIN_EMAIL) {
-  return jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '1h' });
+  // Include super_admin role so requirePermission checks pass in integration tests
+  return jwt.sign({ id: userId, email, companyRole: 'super_admin' }, JWT_SECRET, { expiresIn: '1h' });
 }
 
 function authHeader(userId = ADMIN_ID, email = ADMIN_EMAIL) {

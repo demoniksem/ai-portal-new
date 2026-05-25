@@ -1,7 +1,7 @@
 import { Router, Response, Request, RequestHandler } from 'express';
 import { logger } from '../config/logger';
 import { SpacesService } from '../services/spacesService';
-import { authMiddleware, validate } from '../middleware';
+import { authMiddleware, validate, requirePermission } from '../middleware';
 import { createSpaceSchema } from '../schemas';
 
 const router: Router = Router();
@@ -79,8 +79,8 @@ const deleteSpaceHandler: RequestHandler = async (req, res) => {
 };
 
 router.get('/', authMiddleware, getSpacesHandler);
-router.post('/', authMiddleware, validate(createSpaceSchema), createSpaceHandler);
+router.post('/', authMiddleware, validate(createSpaceSchema), requirePermission('space.create'), createSpaceHandler);
 router.get('/:id', authMiddleware, getSpaceHandler);
-router.delete('/:id', authMiddleware, deleteSpaceHandler);
+router.delete('/:id', authMiddleware, requirePermission('space.delete'), deleteSpaceHandler);
 
 export default router;
