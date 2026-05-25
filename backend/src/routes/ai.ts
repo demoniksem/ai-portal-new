@@ -84,8 +84,10 @@ async function resolveAiConfig(userId: string | undefined, companyId: string | u
 }
 
 // Providers that speak the Anthropic Messages protocol (e.g. MiniMax's
-// Anthropic-compatible endpoint at https://api.minimax.io/anthropic).
-const ANTHROPIC_PROTOCOL_PROVIDERS = new Set(['minimax', 'anthropic']);
+// Anthropic-compatible endpoint at https://api.minimax.io/anthropic, or Kimi
+// For Coding at https://api.kimi.com/coding → /v1/messages). The configured
+// apiBaseUrl is honored, so the base URL is stored per-provider in the DB.
+const ANTHROPIC_PROTOCOL_PROVIDERS = new Set(['minimax', 'anthropic', 'kimi']);
 
 interface LlmResult { ok: boolean; status: number; text: string; error?: string; }
 

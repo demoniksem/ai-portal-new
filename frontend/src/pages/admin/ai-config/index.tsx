@@ -9,6 +9,7 @@ const PROVIDERS = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'anthropic', label: 'Anthropic' },
   { value: 'minimax', label: 'MiniMax' },
+  { value: 'kimi', label: 'Kimi' },
   { value: 'ollama', label: 'Ollama' },
   { value: 'custom', label: 'Custom (compatible)' },
 ];
@@ -18,6 +19,7 @@ const MODEL_SUGGESTIONS: Record<string, string[]> = {
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
   anthropic: ['claude-sonnet-4', 'claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
   minimax: ['MiniMax-M2'],
+  kimi: ['kimi2.6'],
   ollama: ['llama3.2', 'qwen2.5', 'mistral'],
   custom: [],
 };
@@ -215,7 +217,7 @@ export default function AiConfigPage() {
             </div>
           )}
 
-          {provider === 'minimax' && (
+          {(provider === 'minimax' || provider === 'kimi') && (
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>API Base URL</label>
               <input
@@ -223,7 +225,7 @@ export default function AiConfigPage() {
                 className={styles.formInput}
                 value={apiBaseUrl}
                 onChange={e => setApiBaseUrl(e.target.value)}
-                placeholder="https://api.minimax.io/anthropic"
+                placeholder={provider === 'kimi' ? 'https://api.kimi.com/coding' : 'https://api.minimax.io/anthropic'}
               />
             </div>
           )}
