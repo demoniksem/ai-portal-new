@@ -187,3 +187,25 @@ export function updateAiConfig(data: {
 export function resetAiConfig() {
   return adminFetch<{ message: string }>('DELETE', '/api/admin/ai-config', undefined, { isMutation: true });
 }
+
+// ─── Permissions matrix ────────────────────────────────────────────────────────
+export interface Capability {
+  key: string;
+  resource: string;
+  action: string;
+  label: string;
+}
+
+export interface PermissionMatrix {
+  capabilities: Capability[];
+  roles: string[];
+  matrix: Record<string, Record<string, boolean>>;
+}
+
+export function getPermissions() {
+  return adminFetch<PermissionMatrix>('GET', '/api/admin/permissions');
+}
+
+export function updatePermission(role: string, capability: string, allowed: boolean) {
+  return adminFetch<{ ok: boolean }>('PATCH', '/api/admin/permissions', { role, capability, allowed }, { isMutation: true });
+}
