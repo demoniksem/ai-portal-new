@@ -1,6 +1,7 @@
 import { pool, meiliClient } from '../config';
 import { logger } from '../config/logger';
 import { MeiliSearch } from 'meilisearch';
+import { CAPABILITIES, DEFAULT_MATRIX } from '../rbac/capabilities';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const bcrypt = require('bcryptjs');
 import { QueryResult } from 'pg';
@@ -62,6 +63,14 @@ async function initializeDatabase(): Promise<void> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
         UNIQUE(user_id, company_id)
+      );
+
+      -- Role-capability permission matrix
+      CREATE TABLE IF NOT EXISTS role_permissions (
+        role company_role_level NOT NULL,
+        capability VARCHAR(64) NOT NULL,
+        allowed BOOLEAN NOT NULL DEFAULT FALSE,
+        PRIMARY KEY (role, capability)
       );
 
       -- Per-company brand settings
@@ -500,6 +509,24 @@ async function initializeDatabase(): Promise<void> {
       );
       logger.info({ msg: 'Default super-admin created', email: adminEmail });
     }
+
+    // Seed role_permissions defaults (idempotent via ON CONFLICT DO NOTHING)
+    for (const cap of CAPABILITIES) {
+      await pool.query(
+        `INSERT INTO role_permissions (role, capability, allowed) VALUES ('super_admin', $1, TRUE)
+         ON CONFLICT (role, capability) DO NOTHING`,
+        [cap.key],
+      );
+      for (const role of ['admin', 'employee', 'guest'] as const) {
+        const allowed = DEFAULT_MATRIX[role].includes(cap.key);
+        await pool.query(
+          `INSERT INTO role_permissions (role, capability, allowed) VALUES ($1, $2, $3)
+           ON CONFLICT (role, capability) DO NOTHING`,
+          [role, cap.key, allowed],
+        );
+      }
+    }
+    logger.info({ msg: 'role_permissions defaults seeded' });
 
     // MeiliSearch index - only when real MeiliSearch is configured
     if (process.env.MEILISEARCH_URL) {
