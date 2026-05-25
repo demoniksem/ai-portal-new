@@ -1,5 +1,5 @@
 import { authMiddleware } from './rbac';
-import { optionalAuthMiddleware, requireRole, requireDepartmentRole, requireObjectRole, requireSuperAdmin, requireAdmin } from './rbac';
+import { optionalAuthMiddleware, requireRole, requireDepartmentRole, requireObjectRole, requireSuperAdmin, requireAdmin, requirePermission } from './rbac';
 import { validate, querySchemas, validateQuery } from './validation';
 import { globalLimiter, authLimiter, aiLimiter } from './rateLimiter';
 import { corsMiddleware } from './cors';
@@ -24,4 +24,5 @@ export {
   requireObjectRole,
   requireSuperAdmin,
   requireAdmin,
+  requirePermission,
 };

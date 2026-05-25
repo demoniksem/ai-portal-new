@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { CardsService } from '../services/cardsService';
+import { authMiddleware, requirePermission } from '../middleware';
 
 const router: Router = Router();
 const cardsService = new CardsService();
@@ -34,7 +35,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // POST /api/cards
-router.post('/', asyncHandler(async (req: Request, res: Response) => {
+router.post('/', authMiddleware, requirePermission('card.create'), asyncHandler(async (req: Request, res: Response) => {
   const { boardId, columnId, title, type, description, priority, position, authorId, swimlaneId } = req.body;
   if (!boardId || !columnId || !title) {
     res.status(400).json({ error: 'boardId, columnId and title are required' }); return;
@@ -46,7 +47,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // PUT /api/cards/:id
-router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
+router.put('/:id', authMiddleware, requirePermission('card.update'), asyncHandler(async (req: Request, res: Response) => {
   const card = await cardsService.updateCard(req.params.id as string, req.body);
   if (!card) { res.status(404).json({ error: 'Card not found' }); return; }
   res.json(card);
@@ -61,7 +62,7 @@ router.patch('/:id/position', asyncHandler(async (req: Request, res: Response) =
 }));
 
 // DELETE /api/cards/:id
-router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
+router.delete('/:id', authMiddleware, requirePermission('card.delete'), asyncHandler(async (req: Request, res: Response) => {
   const result = await cardsService.deleteCard(req.params.id as string);
   if (!result) { res.status(404).json({ error: 'Card not found' }); return; }
   res.json({ success: true });

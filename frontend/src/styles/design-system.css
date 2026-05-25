@@ -51,9 +51,16 @@
   --color-border-focus: #2563eb;
 
   /* --- Color: Brand / Navigation --- */
-  --color-active-nav: #667eea;
+  --color-active-nav: #2563eb;
   --color-sidebar-bg: #ffffff;
   --color-sidebar-border: #e2e8f0;
+
+  /* --- Aliases for kanban/legacy var names (resolve to canonical tokens) --- */
+  --color-text-primary: var(--color-text);
+  --color-surface-base: var(--color-surface);
+  --color-surface-overlay: var(--color-surface);
+  --color-focus: var(--color-primary);
+  --color-focus-alpha: rgba(37, 99, 235, 0.15);
 
   /* --- Color: Semantic (Light) --- */
   --color-success: #22c55e;
@@ -83,7 +90,7 @@
   --color-column-backlog: #64748b;
   --color-column-todo: #3b82f6;
   --color-column-inprogress: #f59e0b;
-  --color-column-review: #8b5cf6;
+  --color-column-review: #06b6d4;
   --color-column-done: #22c55e;
   --color-column-blocked: #ef4444;
 

@@ -8,6 +8,8 @@ const PROVIDERS = [
   { value: 'openrouter', label: 'OpenRouter' },
   { value: 'openai', label: 'OpenAI' },
   { value: 'anthropic', label: 'Anthropic' },
+  { value: 'minimax', label: 'MiniMax' },
+  { value: 'kimi', label: 'Kimi' },
   { value: 'ollama', label: 'Ollama' },
   { value: 'custom', label: 'Custom (compatible)' },
 ];
@@ -16,6 +18,8 @@ const MODEL_SUGGESTIONS: Record<string, string[]> = {
   openrouter: ['qwen/qwen3.6-plus:free', 'anthropic/claude-sonnet-4', 'openai/gpt-4o'],
   openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
   anthropic: ['claude-sonnet-4', 'claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
+  minimax: ['MiniMax-M2'],
+  kimi: ['kimi2.6'],
   ollama: ['llama3.2', 'qwen2.5', 'mistral'],
   custom: [],
 };
@@ -212,6 +216,19 @@ export default function AiConfigPage() {
               />
             </div>
           )}
+
+          {(provider === 'minimax' || provider === 'kimi') && (
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>API Base URL</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={apiBaseUrl}
+                onChange={e => setApiBaseUrl(e.target.value)}
+                placeholder={provider === 'kimi' ? 'https://api.kimi.com/coding' : 'https://api.minimax.io/anthropic'}
+              />
+            </div>
+          )}
         </div>
 
         <div className={styles.section} style={{ marginBottom: 24 }}>
@@ -286,7 +303,7 @@ export default function AiConfigPage() {
 
         <div style={{ display: 'flex', gap: 12 }}>
           <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} disabled={saving || !enabled}>
-            {saving ? 'Сохранение...' : '💾 Сохранить'}
+            {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
           <button
             type="button"

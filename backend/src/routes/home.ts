@@ -69,7 +69,7 @@ router.get('/activity', async (req: Request, res: Response) => {
        FROM card_activity_log cal
        INNER JOIN cards c ON c.id = cal.card_id
        INNER JOIN boards b ON b.id = c.board_id
-       LEFT JOIN users u ON u.id = cal.actor_id
+       LEFT JOIN rbac_users u ON u.id = cal.actor_id
        WHERE b.created_by = $1
           OR c.id IN (
               SELECT ca.card_id FROM card_assignees ca WHERE ca.user_id = $1

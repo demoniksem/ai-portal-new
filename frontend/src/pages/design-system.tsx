@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import type { NextPage } from 'next';
+import { SquaresFour } from '@phosphor-icons/react';
 import {
   Button,
   Input,
@@ -472,7 +473,7 @@ const DesignSystemDemo: NextPage = () => {
           <div className={styles.headerDemoWrap}>
             <Header
               appName="AI Portal"
-              logo={<span>🚀</span>}
+              logo={<SquaresFour size={20} weight="fill" />}
               userName="Елена Волкова"
               onToggleSidebar={() => {}}
             />

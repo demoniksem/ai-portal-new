@@ -1,7 +1,11 @@
 'use client';
 export const dynamic = 'force-dynamic';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import {
+  ClipboardText, Bug, BookOpen, Rocket, CalendarBlank, Warning,
+  FolderSimple, Bell, House, Megaphone, ArrowsClockwise,
+} from '@phosphor-icons/react';
 import {
   getNotifications,
   markNotificationRead,
@@ -12,7 +16,7 @@ import {
 // Paperclip API base (:3100)
 const PC_API = 'http://localhost:3100';
 // ai-portal backend base (:8081)
-const PORTAL_API = 'http://localhost:3001';
+const PORTAL_API = typeof window !== 'undefined' ? 'http://' + window.location.hostname + ':8081' : '';
 
 function getToken(): string {
   return typeof window !== 'undefined' ? localStorage.getItem('token') || '' : '';
@@ -127,12 +131,12 @@ function formatActivityDescription(item: ActivityItem): string {
   const card = item.card_title || 'карточка';
   const board = item.board_name || '';
   switch (item.action) {
-    case 'created': return `✏️ ${actor} создал(а) «${card}»${board ? ` в ${board}` : ''}`;
-    case 'updated': return `🔄 ${actor} обновил(а) «${card}»${board ? ` в ${board}` : ''}`;
-    case 'moved': return `📦 ${actor} переместил(а) «${card}»${board ? ` в ${board}` : ''}`;
-    case 'commented': return `💬 ${actor} прокомментировал(а) «${card}»${board ? ` в ${board}` : ''}`;
-    case 'assigned': return `👤 ${actor} назначил(а) «${card}»${board ? ` в ${board}` : ''}`;
-    default: return `📝 ${actor} изменил(а) «${card}»${board ? ` в ${board}` : ''}`;
+    case 'created': return `${actor} создал(а) «${card}»${board ? ` в ${board}` : ''}`;
+    case 'updated': return `${actor} обновил(а) «${card}»${board ? ` в ${board}` : ''}`;
+    case 'moved': return `${actor} переместил(а) «${card}»${board ? ` в ${board}` : ''}`;
+    case 'commented': return `${actor} прокомментировал(а) «${card}»${board ? ` в ${board}` : ''}`;
+    case 'assigned': return `${actor} назначил(а) «${card}»${board ? ` в ${board}` : ''}`;
+    default: return `${actor} изменил(а) «${card}»${board ? ` в ${board}` : ''}`;
   }
 }
 
@@ -159,11 +163,14 @@ function getPriorityLabel(priority: string): string {
   return labels[priority] || priority;
 }
 
-function getTypeIcon(type: string): string {
-  const icons: Record<string, string> = {
-    task: '📋', bug: '🐛', story: '📖', epic: '🚀',
+function getTypeIcon(type: string): ReactNode {
+  const icons: Record<string, ReactNode> = {
+    task: <ClipboardText size={15} weight="duotone" />,
+    bug: <Bug size={15} weight="duotone" />,
+    story: <BookOpen size={15} weight="duotone" />,
+    epic: <Rocket size={15} weight="duotone" />,
   };
-  return icons[type] || '📋';
+  return icons[type] || <ClipboardText size={15} weight="duotone" />;
 }
 
 // ─── My Tasks Widget ─────────────────────────────────────────────────────────
@@ -210,7 +217,7 @@ export function MyTasksWidget({ currentUserId }: MyTasksWidgetProps) {
   return (
     <div style={W.widget}>
       <div style={W.widgetHeader}>
-        <h2 style={W.widgetTitle}>📋 Мои задачи</h2>
+        <h2 style={{ ...W.widgetTitle, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardText size={18} weight="duotone" />Мои задачи</h2>
         <div style={W.widgetActions}>
           <select
             value={filter.status}
@@ -232,7 +239,7 @@ export function MyTasksWidget({ currentUserId }: MyTasksWidgetProps) {
             <option value="medium">Средний</option>
             <option value="low">Низкий</option>
           </select>
-          <button style={W.refreshBtn} onClick={fetchTasks} title="Обновить">🔄</button>
+          <button style={{ ...W.refreshBtn, display: 'inline-flex', alignItems: 'center' }} onClick={fetchTasks} title="Обновить" aria-label="Обновить"><ArrowsClockwise size={15} weight="bold" /></button>
         </div>
       </div>
 
@@ -255,7 +262,7 @@ export function MyTasksWidget({ currentUserId }: MyTasksWidgetProps) {
                   {getPriorityLabel(task.priority)}
                 </span>
                 {isOverdue(task.deadline) && (
-                  <span style={W.overdueBadge}>⚠️ Просрочено</span>
+                  <span style={{ ...W.overdueBadge, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Warning size={12} weight="fill" />Просрочено</span>
                 )}
               </div>
               <div style={W.taskTitle}>{task.title}</div>
@@ -263,15 +270,16 @@ export function MyTasksWidget({ currentUserId }: MyTasksWidgetProps) {
                 <div style={W.taskDesc}>{task.description.slice(0, 80)}{task.description.length > 80 ? '…' : ''}</div>
               )}
               <div style={W.taskMeta}>
-                <span>📁 {task.boardName}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><FolderSimple size={13} weight="duotone" />{task.boardName}</span>
                 <span>→ {task.columnName}</span>
               </div>
               {task.deadline && (
                 <div style={{
                   ...W.taskDeadline,
                   color: isOverdue(task.deadline) ? '#ef4444' : 'var(--color-text-muted)',
+                  display: 'flex', alignItems: 'center', gap: 4,
                 }}>
-                  📅 {formatDate(task.deadline)}
+                  <CalendarBlank size={13} weight="duotone" />{formatDate(task.deadline)}
                 </div>
               )}
             </div>
@@ -307,8 +315,8 @@ export function ActivityFeedWidget() {
   return (
     <div style={W.widget}>
       <div style={W.widgetHeader}>
-        <h2 style={W.widgetTitle}>📣 Лента активности</h2>
-        <button style={W.refreshBtn} onClick={fetchActivity} title="Обновить">🔄</button>
+        <h2 style={{ ...W.widgetTitle, display: 'flex', alignItems: 'center', gap: 8 }}><Megaphone size={18} weight="duotone" />Лента активности</h2>
+        <button style={{ ...W.refreshBtn, display: 'inline-flex', alignItems: 'center' }} onClick={fetchActivity} title="Обновить" aria-label="Обновить"><ArrowsClockwise size={15} weight="bold" /></button>
       </div>
       {loading && <div style={W.loading}>Загрузка...</div>}
       {!loading && activities.length === 0 && <div style={W.empty}>Нет активности</div>}
@@ -365,8 +373,8 @@ export function NotificationsWidget() {
   return (
     <div style={W.widget}>
       <div style={W.widgetHeader}>
-        <h2 style={W.widgetTitle}>
-          🔔 Уведомления
+        <h2 style={{ ...W.widgetTitle, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Bell size={18} weight="duotone" />Уведомления
           {unreadCount > 0 && <span style={W.badge}>{unreadCount}</span>}
         </h2>
         {unreadCount > 0 && (
@@ -449,7 +457,7 @@ export function CalendarWidget() {
   return (
     <div style={W.widget}>
       <div style={W.widgetHeader}>
-        <h2 style={W.widgetTitle}>📅 Календарь</h2>
+        <h2 style={{ ...W.widgetTitle, display: 'flex', alignItems: 'center', gap: 8 }}><CalendarBlank size={18} weight="duotone" />Календарь</h2>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button style={W.navBtn} onClick={prevMonth}>←</button>
           <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-text)', minWidth: 120, textAlign: 'center' }}>
@@ -576,8 +584,8 @@ export default function Home() {
     }
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setCurrentUserId(payload.id || payload.sub || '');
-      setCurrentUserName(payload.name || payload.username || 'Сотрудник');
+      setCurrentUserId(payload.userId || payload.id || payload.sub || '');
+      setCurrentUserName(payload.name || payload.username || payload.email || 'Сотрудник');
     } catch {
       setCurrentUserId('');
       setCurrentUserName('Сотрудник');
@@ -607,15 +615,16 @@ export default function Home() {
       {/* Top Bar */}
       <header style={H.header}>
         <div style={H.headerLeft}>
-          <h1 style={H.pageTitle}>🏠 Главная</h1>
+          <h1 style={{ ...H.pageTitle, display: 'flex', alignItems: 'center', gap: 10 }}><House size={24} weight="duotone" />Главная</h1>
           <span style={H.greeting}>Добро пожаловать, {currentUserName}</span>
         </div>
         <div style={H.headerRight}>
           <button
             style={H.notifBtn}
             onClick={() => setShowNotifications(!showNotifications)}
+            aria-label="Уведомления"
           >
-            🔔
+            <Bell size={18} weight="duotone" />
           </button>
           <button
             style={H.boardsBtn}
@@ -648,7 +657,7 @@ export default function Home() {
               style={{ ...H.mobileTab, ...(showMobilePanel === tab ? H.mobileTabActive : {}) }}
               onClick={() => setShowMobilePanel(tab)}
             >
-              {tab === 'tasks' ? '📋 Задачи' : tab === 'activity' ? '📣 Активность' : '📅 Календарь'}
+              {tab === 'tasks' ? 'Задачи' : tab === 'activity' ? 'Активность' : 'Календарь'}
             </button>
           ))}
         </div>
@@ -685,18 +694,19 @@ export default function Home() {
 const W: Record<string, React.CSSProperties> = {
   widget: {
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
-    borderRadius: 12,
+    border: '1px solid var(--color-border)',
+    borderRadius: 16,
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
+    boxShadow: '0 20px 40px -18px rgba(15, 23, 42, 0.06)',
   },
   widgetHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '14px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     background: 'var(--color-background-alt)',
     flexWrap: 'wrap',
     gap: 8,
@@ -717,14 +727,14 @@ const W: Record<string, React.CSSProperties> = {
   },
   widgetFooter: {
     padding: '8px 16px',
-    borderTop: '1px solid var(--color-text-muted)',
+    borderTop: '1px solid var(--color-border)',
     fontSize: '0.78rem',
     color: 'var(--color-text-muted)',
     background: 'var(--color-background-alt)',
   },
   select: {
     padding: '4px 8px',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     fontSize: '0.82rem',
     background: 'var(--color-surface)',
@@ -733,7 +743,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   refreshBtn: {
     background: 'none',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '4px 8px',
@@ -767,7 +777,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   taskCard: {
     padding: '12px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     cursor: 'pointer',
     transition: 'background 0.15s',
   },
@@ -824,7 +834,7 @@ const W: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 10,
     padding: '10px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
   },
   activityDot: {
     width: 8,
@@ -856,7 +866,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   notifItem: {
     padding: '10px 16px',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     cursor: 'pointer',
   },
   notifTitle: {
@@ -887,7 +897,7 @@ const W: Record<string, React.CSSProperties> = {
   markReadBtn: {
     fontSize: '0.78rem',
     background: 'none',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '3px 8px',
@@ -912,7 +922,7 @@ const W: Record<string, React.CSSProperties> = {
   calendarDay: {
     aspectRatio: '1',
     padding: '3px',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 4,
     display: 'flex',
     flexDirection: 'column',
@@ -938,7 +948,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   calendarLegend: {
     padding: '8px 12px',
-    borderTop: '1px solid var(--color-text-muted)',
+    borderTop: '1px solid var(--color-border)',
     background: 'var(--color-background-alt)',
   },
   statsRow: {
@@ -951,10 +961,11 @@ const W: Record<string, React.CSSProperties> = {
     flex: 1,
     minWidth: 120,
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
-    borderRadius: 10,
-    padding: '14px 16px',
+    border: '1px solid var(--color-border)',
+    borderRadius: 14,
+    padding: '16px 18px',
     borderLeft: '3px solid var(--color-active-nav)',
+    boxShadow: '0 20px 40px -18px rgba(15, 23, 42, 0.06)',
   },
   statNum: {
     fontSize: '1.8rem',
@@ -970,7 +981,7 @@ const W: Record<string, React.CSSProperties> = {
   },
   navBtn: {
     background: 'var(--color-background-alt)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 6,
     cursor: 'pointer',
     padding: '4px 10px',
@@ -992,7 +1003,7 @@ const H: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     padding: '16px 24px',
     background: 'var(--color-surface)',
-    borderBottom: '1px solid var(--color-text-muted)',
+    borderBottom: '1px solid var(--color-border)',
     flexWrap: 'wrap',
     gap: 12,
   },
@@ -1009,7 +1020,8 @@ const H: Record<string, React.CSSProperties> = {
   },
   pageTitle: {
     fontSize: '1.4rem',
-    fontWeight: 800,
+    fontWeight: 700,
+    letterSpacing: '-0.01em',
     color: 'var(--color-text)',
     margin: 0,
   },
@@ -1020,7 +1032,7 @@ const H: Record<string, React.CSSProperties> = {
   },
   notifBtn: {
     background: 'var(--color-background-alt)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 8,
     cursor: 'pointer',
     padding: '8px 12px',
@@ -1043,7 +1055,8 @@ const H: Record<string, React.CSSProperties> = {
     right: 0,
     bottom: 0,
     zIndex: 1000,
-    background: 'rgba(0,0,0,0.3)',
+    background: 'rgba(15, 23, 42, 0.22)',
+    backdropFilter: 'blur(4px)',
   },
   notifPanel: {
     position: 'absolute',
@@ -1052,8 +1065,8 @@ const H: Record<string, React.CSSProperties> = {
     width: 380,
     maxHeight: '80vh',
     zIndex: 1001,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-    borderRadius: 12,
+    boxShadow: '0 32px 64px -24px rgba(15, 23, 42, 0.16)',
+    borderRadius: 16,
     overflow: 'hidden',
   },
   main: {
@@ -1073,7 +1086,7 @@ const H: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: '8px 12px',
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-text-muted)',
+    border: '1px solid var(--color-border)',
     borderRadius: 8,
     cursor: 'pointer',
     fontSize: '0.85rem',

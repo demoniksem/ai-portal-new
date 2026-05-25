@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Circle, User, CalendarBlank, ChatCircle, Lock, Paperclip } from '@phosphor-icons/react';
 import styles from './KanbanCard.module.css';
 import type { KanbanCardData } from './KanbanBoard';
 import { Avatar } from '../ui';
@@ -98,18 +99,21 @@ export function KanbanCard({
             title={`Приоритет: ${priorityColorMap[card.priority]?.label}`}
             aria-label={`Приоритет: ${priorityColorMap[card.priority]?.label}`}
           >
-            {card.priority === 'critical'
-              ? '🔴'
-              : card.priority === 'high'
-              ? '🟠'
-              : card.priority === 'medium'
-              ? '🟡'
-              : '🟢'}
+            <Circle
+              size={9}
+              weight="fill"
+              color={
+                card.priority === 'critical' ? '#dc2626'
+                : card.priority === 'high' ? '#ea580c'
+                : card.priority === 'medium' ? '#d97706'
+                : '#16a34a'
+              }
+            />
           </span>
         )}
         {isBlocked && (
-          <span className={styles.blockedBadge} title="Заблокирована другой карточкой">
-            🔒
+          <span className={styles.blockedBadge} title="Заблокирована другой карточкой" style={{ display: 'inline-flex' }}>
+            <Lock size={13} weight="fill" />
           </span>
         )}
       </div>
@@ -170,8 +174,8 @@ export function KanbanCard({
               size="xs"
             />
           ) : (
-            <span className={styles.unassigned} title="Не назначена">
-              👤
+            <span className={styles.unassigned} title="Не назначена" style={{ display: 'inline-flex' }}>
+              <User size={14} weight="fill" />
             </span>
           )}
         </div>
@@ -181,18 +185,19 @@ export function KanbanCard({
               className={styles.dueDate}
               data-overdue={isOverdue(card.dueDate)}
               title={`Дедлайн: ${card.dueDate}`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
             >
-              📅 {card.dueDate}
+              <CalendarBlank size={13} weight="duotone" />{card.dueDate}
             </span>
           )}
           {card.commentCount != null && card.commentCount > 0 && (
-            <span className={styles.meta} title="Комментарии">
-              💬 {card.commentCount}
+            <span className={styles.meta} title="Комментарии" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <ChatCircle size={13} weight="duotone" />{card.commentCount}
             </span>
           )}
           {card.attachmentCount != null && card.attachmentCount > 0 && (
-            <span className={styles.meta} title="Вложения">
-              📎 {card.attachmentCount}
+            <span className={styles.meta} title="Вложения" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Paperclip size={13} weight="duotone" />{card.attachmentCount}
             </span>
           )}
         </div>

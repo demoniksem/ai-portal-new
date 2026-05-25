@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   getBoard,
   updateCard,
@@ -20,14 +21,25 @@ import type {
 import { KanbanBoard, KanbanColumnDef, KanbanSwimlaneDef, KanbanCardData } from '../../../components/kanban/KanbanBoard';
 import { CardModal } from '../../../components/kanban/CardModal';
 import { TemplatesDialog } from '../../../components/kanban/TemplatesDialog';
+import {
+  PencilSimple, Trash, Warning, Kanban, ArrowLeft, Plus, DotsThreeVertical,
+  CheckCircle, XCircle, Info, CircleNotch,
+} from '@phosphor-icons/react';
 import type { CardTemplateResponse } from '../../../lib/api';
-import styles from './BoardDetail.module.css';
+import { MotionButton } from '../../../components/ui/MotionButton';
 
 interface Toast {
   id: number;
   message: string;
   type: 'success' | 'error' | 'info';
 }
+
+const TOAST_ICON = { success: CheckCircle, error: XCircle, info: Info } as const;
+const TOAST_TONE = {
+  success: 'border-success/30 text-success',
+  error: 'border-danger/30 text-danger',
+  info: 'border-accent/30 text-accent',
+} as const;
 
 function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -36,26 +48,29 @@ function useToast() {
     setToasts((p) => [...p, { id, message: msg, type: t }]);
     setTimeout(() => setToasts((p) => p.filter((x) => x.id !== id)), 4000);
   }, []);
-  const ToastContainer = () =>
-    toasts.length === 0 ? null : (
-      <div className={styles.toastContainer}>
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`${styles.toast} ${
-              t.type === 'success'
-                ? styles.toastSuccess
-                : t.type === 'error'
-                ? styles.toastError
-                : styles.toastInfo
-            }`}
-          >
-            {t.type === 'success' ? '✓ ' : t.type === 'error' ? '✗ ' : 'ℹ '}
-            {t.message}
-          </div>
-        ))}
-      </div>
-    );
+  const ToastContainer = () => (
+    <div className="pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col gap-2.5">
+      <AnimatePresence>
+        {toasts.map((t) => {
+          const Icon = TOAST_ICON[t.type];
+          return (
+            <motion.div
+              key={t.id}
+              layout
+              initial={{ opacity: 0, x: 24, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 24, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+              className={`pointer-events-auto flex items-center gap-2.5 rounded-xl border bg-surface px-3.5 py-2.5 text-sm shadow-diffusion ${TOAST_TONE[t.type]}`}
+            >
+              <Icon size={18} weight="fill" className="shrink-0" />
+              <span className="text-fg">{t.message}</span>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
   return { addToast: add, ToastContainer };
 }
 
@@ -326,37 +341,45 @@ export default function BoardDetailPage() {
       const colId = apiCol.id;
       return (
         <div
-          className={styles.columnMenu}
+          className="relative"
           ref={(el) => {
             columnMenuRef.current[colId] = el;
           }}
         >
           <button
-            className={styles.columnMenuBtn}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-fg-muted transition hover:bg-surface-hover hover:text-fg"
             onClick={(e) => {
               e.stopPropagation();
               setOpenColumnMenu(openColumnMenu === colId ? null : colId);
             }}
             title="Действия колонки"
           >
-            ⋮
+            <DotsThreeVertical size={18} weight="bold" />
           </button>
-          {openColumnMenu === colId && (
-            <div className={styles.columnMenuDropdown}>
-              <button
-                className={styles.columnMenuItem}
-                onClick={() => handleRenameColumn(colId)}
+          <AnimatePresence>
+            {openColumnMenu === colId && (
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                transition={{ duration: 0.12 }}
+                className="absolute right-0 top-9 z-30 min-w-[170px] overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-diffusion-lg"
               >
-                ✏️ Переименовать
-              </button>
-              <button
-                className={`${styles.columnMenuItem} ${styles.columnMenuItemDanger}`}
-                onClick={() => handleDeleteColumn(colId)}
-              >
-                🗑 Удалить
-              </button>
-            </div>
-          )}
+                <button
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-fg-secondary transition hover:bg-surface-hover hover:text-fg"
+                  onClick={() => handleRenameColumn(colId)}
+                >
+                  <PencilSimple size={15} weight="bold" />Переименовать
+                </button>
+                <button
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-danger transition hover:bg-danger/10"
+                  onClick={() => handleDeleteColumn(colId)}
+                >
+                  <Trash size={15} weight="bold" />Удалить
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       );
     },
@@ -367,37 +390,54 @@ export default function BoardDetailPage() {
 
   if (loading) {
     return (
-      <div className={styles.loadingState}>
-        <div className={styles.spinner} />
-        Загрузка доски...
+      <div className="flex min-h-[100dvh] items-center justify-center bg-bg">
+        <div className="flex items-center gap-2 text-sm text-fg-secondary">
+          <CircleNotch size={18} weight="bold" className="animate-spin text-accent" />Загрузка доски…
+        </div>
       </div>
     );
   }
 
   if (error || !board) {
     return (
-      <div className={styles.errorState}>
-        <span>⚠️ {error || 'Доска не найдена'}</span>
+      <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-bg text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10 text-danger">
+          <Warning size={28} weight="fill" />
+        </div>
+        <p className="text-fg-secondary">{error || 'Доска не найдена'}</p>
         <Link href="/spaces">
-          <button className={styles.actionBtn}>← Вернуться в пространства</button>
+          <MotionButton variant="subtle"><ArrowLeft size={15} weight="bold" />Вернуться в пространства</MotionButton>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className={styles.page}>
+    <div className="flex h-[100dvh] flex-col bg-bg">
       {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <Link href="/spaces" className={styles.backBtn} title="Вернуться">
-            ←
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-5 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link
+            href="/spaces"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-fg-muted transition hover:bg-surface-hover hover:text-fg"
+            title="Вернуться"
+            aria-label="Вернуться"
+          >
+            <ArrowLeft size={18} weight="bold" />
           </Link>
-          <h1 className={styles.boardTitle}>{board.name}</h1>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
+            <Kanban size={18} weight="fill" />
+          </span>
+          <h1 className="truncate text-lg font-semibold tracking-tight text-fg" title={board.name}>{board.name}</h1>
         </div>
-        <div className={styles.headerActions}>
+        <div className="flex shrink-0 items-center gap-2">
           <button
-            className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3.5 py-2 text-sm font-medium text-fg-secondary transition hover:bg-surface-hover hover:text-fg active:scale-[0.98]"
+            onClick={() => setTemplatesOpen(true)}
+          >
+            <Kanban size={16} weight="bold" />Шаблоны
+          </button>
+          <MotionButton
             onClick={() => {
               const title = window.prompt('Название карточки:');
               if (!title?.trim() || !boardId) return;
@@ -413,19 +453,13 @@ export default function BoardDetailPage() {
               }).catch(() => addToast('Ошибка создания', 'error'));
             }}
           >
-            + Карточка
-          </button>
-          <button
-            className={styles.actionBtn}
-            onClick={() => setTemplatesOpen(true)}
-          >
-            📋 Шаблоны
-          </button>
+            <Plus size={16} weight="bold" />Карточка
+          </MotionButton>
         </div>
-      </div>
+      </header>
 
       {/* Board */}
-      <div className={styles.boardWrapper}>
+      <div className="flex min-h-0 flex-1 items-start gap-4 overflow-x-auto p-5">
         <KanbanBoard
           columns={kanbanColumns}
           swimlanes={kanbanSwimlanes}
@@ -441,10 +475,10 @@ export default function BoardDetailPage() {
 
         {/* Add column */}
         {addingColumn ? (
-          <div className={styles.newColumnForm}>
+          <div className="flex w-72 shrink-0 flex-col gap-2 rounded-2xl border border-line bg-surface p-3">
             <input
-              className={styles.newColumnInput}
-              placeholder="Название колонки..."
+              className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg outline-none transition placeholder:text-fg-muted focus:border-accent focus:ring-4 focus:ring-accent/15"
+              placeholder="Название колонки…"
               value={newColumnName}
               onChange={(e) => setNewColumnName(e.target.value)}
               onKeyDown={(e) => {
@@ -456,24 +490,26 @@ export default function BoardDetailPage() {
               }}
               autoFocus
             />
-            <div className={styles.newColumnActions}>
-              <button onClick={handleAddColumn}>Добавить</button>
-              <button
+            <div className="flex gap-2">
+              <MotionButton onClick={handleAddColumn} className="!py-1.5 text-xs">Добавить</MotionButton>
+              <MotionButton
+                variant="ghost"
+                className="!py-1.5 text-xs"
                 onClick={() => {
                   setAddingColumn(false);
                   setNewColumnName('');
                 }}
               >
                 Отмена
-              </button>
+              </MotionButton>
             </div>
           </div>
         ) : (
           <button
-            className={styles.addColumnBtn}
+            className="flex w-72 shrink-0 items-center justify-center gap-2 rounded-2xl border border-dashed border-line bg-surface/50 px-4 py-3 text-sm font-medium text-fg-secondary transition hover:border-accent/40 hover:bg-surface-hover hover:text-fg"
             onClick={() => setAddingColumn(true)}
           >
-            + Добавить колонку
+            <Plus size={16} weight="bold" />Добавить колонку
           </button>
         )}
       </div>

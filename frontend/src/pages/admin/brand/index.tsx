@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, FormEvent } from 'react';
 import AdminLayout from '../../../components/admin/AdminLayout';
+import { Buildings } from '@phosphor-icons/react';
 import { getBrand, updateBrand, BrandSettings } from '../../../lib/admin-api';
 import styles from '../../../styles/admin.module.css';
 
@@ -145,7 +146,7 @@ export default function BrandPage() {
             }}>
               {logoUrl
                 ? <img src={logoUrl} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                : <span>🏢</span>
+                : <span style={{ display: 'inline-flex', color: 'var(--color-text-muted)' }}><Buildings size={28} weight="duotone" /></span>
               }
             </div>
               <div style={{ flex: 1 }}>
@@ -172,7 +173,7 @@ export default function BrandPage() {
 
         <div className={styles.btnGroup}>
           <button type="submit" className={`${styles.btn} ${styles.btnPrimary}`} disabled={saving}>
-            {saving ? 'Сохранение...' : '💾 Сохранить'}
+            {saving ? 'Сохранение…' : 'Сохранить'}
           </button>
         </div>
       </form>

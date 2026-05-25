@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import { LinkSimple } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 
 interface RichTextEditorProps {
@@ -191,7 +192,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           active={editor.isActive('link')}
           title="Ссылка"
         >
-          🔗
+          <LinkSimple size={16} weight="bold" />
         </ToolbarButton>
 
         {/* Alignment */}

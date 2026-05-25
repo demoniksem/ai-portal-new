@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { JWT_SECRET } from '../config';
 import { AuthService } from '../services/authService';
 import { AuditService } from '../services/auditService';
+import { permissionService } from '../services/permissionService';
 import type { CompanyRole, DepartmentRole, ObjectRole } from '../types';
 
 const authService = new AuthService();
@@ -203,4 +204,30 @@ export function requireSuperAdmin(req: Request, res: Response, next: NextFunctio
  */
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   requireRole('super_admin', 'admin')(req, res, next);
+}
+
+/**
+ * ─── Permission-matrix RBAC ──────────────────────────────────────────────────
+ * requirePermission(capability) — checks the user's company role against the
+ * editable permission matrix. super_admin always passes.
+ */
+export function requirePermission(capability: string) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    if (!permissionService.can(req.user.companyRole, capability)) {
+      auditService.logPermissionDenied(
+        req.user.companyId,
+        req.user.id,
+        `requirePermission(${capability})`,
+        'capability',
+        capability
+      );
+      res.status(403).json({ error: `Forbidden: missing permission ${capability}` });
+      return;
+    }
+    next();
+  };
 }

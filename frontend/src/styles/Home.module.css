@@ -303,7 +303,7 @@
 
 .progressBarInner {
   height: 100%;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
   border-radius: var(--radius-full);
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -513,7 +513,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
   border-radius: var(--radius-sm);
 }
 
@@ -533,13 +533,13 @@
   border-radius: 50%;
   background: var(--color-primary);
   border: 2px solid #fff;
-  box-shadow: 0 0 0 2px #667eea;
+  box-shadow: 0 0 0 2px #2563eb;
   transition: all var(--transition-base);
 }
 
 .timelineItem:hover::before {
   transform: scale(1.2);
-  box-shadow: 0 0 0 3px #667eea;
+  box-shadow: 0 0 0 3px #2563eb;
 }
 
 .timelineDate {
@@ -547,7 +547,7 @@
   padding: 2px 10px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #667eea;
+  color: #2563eb;
   background: #ebe8ff;
   border-radius: var(--radius-full);
   margin-bottom: var(--spacing-xs);

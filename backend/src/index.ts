@@ -24,6 +24,7 @@ import {
   departmentsRouter,
 } from './routes';
 import { initializeDatabase } from './db/init';
+import { permissionService } from './services/permissionService';
 
 const app: Express = express();
 
@@ -38,9 +39,6 @@ app.use(globalLimiter);
 // Serve uploaded files at /api/uploads/:filename
 const uploadsDir = path.join(__dirname, '../../uploads');
 app.use('/api/uploads', express.static(uploadsDir));
-
-// ==================== DATABASE INIT ====================
-void initializeDatabase();
 
 // ==================== ROUTES ====================
 app.use('/api/auth', authRouter);
@@ -61,9 +59,17 @@ app.use('/api/admin/ai-config', aiConfigRouter);
 
 // ==================== SERVER ====================
 const PORT = process.env.PORT || 3001;
-const server = app.listen(PORT, () => {
-  logger.info({ msg: `AI Portal backend started`, port: PORT });
-});
+let server: ReturnType<typeof app.listen>;
+
+void (async () => {
+  // ==================== DATABASE INIT ====================
+  await initializeDatabase();
+  await permissionService.load();
+
+  server = app.listen(PORT, () => {
+    logger.info({ msg: `AI Portal backend started`, port: PORT });
+  });
+})();
 
 process.on('SIGTERM', () => {
   logger.info({ msg: 'SIGTERM received, shutting down gracefully' });
