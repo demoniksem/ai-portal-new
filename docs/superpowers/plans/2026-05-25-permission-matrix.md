@@ -10,6 +10,15 @@
 
 **Spec:** `docs/superpowers/specs/2026-05-25-permission-matrix-design.md`
 
+> **PROGRESS (2026-05-25):** R1 backend infrastructure (Tasks 1–5) is DONE, committed
+> (`5364fcf`, `36b6c58`, `fb9d509`, `3946b18`, `e35dec1`), unit-tested, and runtime-verified
+> (backend rebuilt boots healthy; seed counts super_admin 22 / admin 21 / employee 13 / guest 3;
+> `GET /api/admin/permissions` returns the matrix). **RESUME AT Task 6** (enforcement on
+> spaces/pages/boards/cards mutations) → Task 7–8 (matrix UI) → Task 9 (optional). Note for
+> Task 6: PATCH `/cards/:id` should use `requirePermission('card.update')` (move goes through the
+> same endpoint; `card.move` stays catalog-only for now). After Task 6, rebuild backend + verify
+> 403 for under-privileged roles before moving on. Backend tests run on host: `cd backend && npx jest`.
+
 ---
 
 ## File Structure
