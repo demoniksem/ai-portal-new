@@ -2,9 +2,11 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { AuditService } from '../services/auditService';
 import { DepartmentsService } from '../services/departmentsService';
-import { authMiddleware, requireSuperAdmin, requireAdmin } from '../middleware';
+import { authMiddleware, requireSuperAdmin, requireAdmin, requirePermission } from '../middleware';
 import { pool } from '../config';
 import { logger } from '../config/logger';
+import { CAPABILITIES, CAPABILITY_KEYS, ALL_ROLES } from '../rbac/capabilities';
+import { permissionService } from '../services/permissionService';
 
 const router: Router = Router();
 const auditService = new AuditService();
@@ -522,6 +524,41 @@ router.get('/audit-log', authMiddleware, requireSuperAdmin, async (req: Request,
     return res.json({ entries });
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── GET /api/admin/permissions ──────────────────────────────────────────────
+router.get('/permissions', authMiddleware, requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const { rows } = await pool.query('SELECT role, capability, allowed FROM role_permissions');
+    const matrix: Record<string, Record<string, boolean>> = {};
+    for (const role of ALL_ROLES) matrix[role] = {};
+    for (const r of rows as { role: string; capability: string; allowed: boolean }[]) {
+      if (matrix[r.role]) matrix[r.role][r.capability] = r.allowed;
+    }
+    for (const c of CAPABILITIES) matrix['super_admin'][c.key] = true;
+    return res.json({ capabilities: CAPABILITIES, roles: ALL_ROLES, matrix });
+  } catch (e) {
+    logger.error({ msg: '[Admin] permissions GET error', error: (e as Error).message });
+    return res.status(500).json({ error: 'Failed to fetch permissions' });
+  }
+});
+
+// ─── PATCH /api/admin/permissions ────────────────────────────────────────────
+router.patch('/permissions', authMiddleware, requirePermission('role.manage'), async (req: Request, res: Response) => {
+  try {
+    const { role, capability, allowed } = req.body as { role?: string; capability?: string; allowed?: boolean };
+    if (!role || role === 'super_admin' || !ALL_ROLES.includes(role as any)) {
+      return res.status(400).json({ error: 'invalid or immutable role' });
+    }
+    if (!capability || !CAPABILITY_KEYS.has(capability)) {
+      return res.status(400).json({ error: 'unknown capability' });
+    }
+    await permissionService.setAllowed(role as any, capability, Boolean(allowed));
+    return res.json({ ok: true, role, capability, allowed: Boolean(allowed) });
+  } catch (e) {
+    logger.error({ msg: '[Admin] permissions PATCH error', error: (e as Error).message });
+    return res.status(500).json({ error: 'Failed to update permission' });
   }
 });
 
