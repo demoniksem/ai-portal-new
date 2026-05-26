@@ -52,9 +52,12 @@ class SpacesService {
   }
 
   async deleteSpace(id: number): Promise<{ success?: boolean; error?: string; status?: number }> {
-    const deleted = await spacesRepo.delete(id);
-    if (!deleted) {
+    const result = await spacesRepo.delete(id);
+    if (result === 'not_found') {
       return { error: 'Space not found', status: 404 };
+    }
+    if (result === 'has_live_pages') {
+      return { error: 'В пространстве есть страницы — сначала удалите их', status: 400 };
     }
     return { success: true };
   }
