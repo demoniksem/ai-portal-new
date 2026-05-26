@@ -978,60 +978,37 @@ function PageEditor({ page }: PageEditorProps) {
 // ============ BUILD PANEL ============
 
 function BuildPanel() {
-  const { loadPages, addToast, setPreviewPage } = useApp();
+  const { loadPages, addToast, selectPage, selectedSpace, spaces } = useApp();
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<Page | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const handleBuild = async () => {
     const token = getToken();
     if (!token) { window.location.href = '/login'; return; }
     if (!prompt.trim()) return;
+    const spaceId = selectedSpace ?? spaces[0]?.id;
+    if (!spaceId) { addToast('Сначала создайте пространство', 'warning'); return; }
     setLoading(true);
     try {
-      const result = await api('POST', '/api/ai/build', { prompt }, token) as unknown as Page;
-      setPreview(result);
-      setSaved(false);
-      setPreviewPage(result);
-      addToast('Страница сгенерирована!', 'success');
-    } catch (e) { addToast('Ошибка: ' + (e as Error).message, 'error'); }
-    finally { setLoading(false); }
-  };
-
-  const handleSave = async () => {
-    if (!preview) return;
-    const token = getToken();
-    if (!token) return;
-    try {
-      await api('POST', '/api/pages', {
-        title: preview.title || 'Без названия',
-        content: preview.content || [],
-        spaceId: 1,
-        acl: { readers: ['all'] }
-      }, token);
-      setSaved(true);
-      addToast('Страница сохранена!', 'success');
+      const spec = await api('POST', '/api/ai/build', { prompt }, token) as unknown as Page;
+      const created = await api('POST', '/api/pages', {
+        title: spec.title || 'Без названия',
+        content: spec.content || [],
+        spaceId,
+        acl: { readers: ['all'] },
+      }, token) as unknown as Page;
+      addToast('Страница создана', 'success');
+      setPrompt('');
       await loadPages();
-      setTimeout(() => { setPreview(null); setPrompt(''); setSaved(false); setPreviewPage(null); }, 1500);
-    } catch (e) { addToast('Ошибка сохранения: ' + (e as Error).message, 'error'); }
+      selectPage(created);
+    } catch (e) {
+      const msg = (e as Error).message || '';
+      const denied = msg.includes('Forbidden') || msg.includes('permission');
+      addToast(denied ? 'Недостаточно прав для создания страниц' : 'Ошибка: ' + msg, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (preview) {
-    return (
-      <div style={R.viewer}>
-        <div style={R.viewerHeader}>
-          <h1 style={R.pageTitle}>{preview.title || 'Результат'}</h1>
-          <div style={R.meta}>Предпросмотр - ещё не сохранено</div>
-        </div>
-        {(preview.content || []).map((b, i) => renderBlock({ block: b, index: i }))}
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          <button style={R.btnSave} onClick={handleSave} disabled={saved}>{saved ? 'Сохранено' : 'Сохранить'}</button>
-          <button style={R.btnOutline} onClick={() => { setPreview(null); setPrompt(''); setPreviewPage(null); }}>Отменить</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={R.centered}>
