@@ -5,6 +5,7 @@ import type { Space, Page, PageBlock } from '../types/api';
 import ThemeToggle from '../components/ThemeToggle';
 import AIAssistant from '../components/AIAssistant';
 import NotificationPanel from '../components/NotificationPanel';
+import SettingsModal from '../components/SettingsModal';
 import {
   SquaresFour, Bell, MagnifyingGlass, FileText, Sparkle, Gear, Robot,
   CaretDown, CaretRight, Trash, MagicWand, Rocket, PaperPlaneTilt, CircleNotch,
@@ -1062,8 +1063,7 @@ function Welcome() {
 // ============ MAIN CONTENT ============
 
 function MainContent() {
-  const { selectedPage, editMode, directEditMode, showSettings } = useApp();
-  if (showSettings) return <div />; // Settings handled elsewhere
+  const { selectedPage, editMode, directEditMode } = useApp();
   if (editMode && selectedPage) return <AIEditor page={selectedPage} />;
   if (directEditMode && selectedPage) return <PageEditor page={selectedPage} />;
   if (selectedPage) return <PageViewer page={selectedPage} />;
@@ -1369,6 +1369,7 @@ export default function Home() {
         {showNotificationPanel && (
           <NotificationPanel onClose={() => setShowNotificationPanel(false)} />
         )}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </div>
     </AppContext.Provider>
   );
