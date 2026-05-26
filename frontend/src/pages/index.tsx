@@ -1432,7 +1432,7 @@ const S: Record<string, React.CSSProperties> = {
   newSpaceForm: { padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 },
   spaceInput: {
     border: '1px solid var(--color-border)', borderRadius: 6, padding: '6px 10px',
-    fontSize: '0.9rem', outline: 'none', color: 'var(--color-text)'
+    fontSize: '0.9rem', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-text)'
   },
   btnSave: {
     padding: '5px 12px', background: 'var(--color-active-nav)', color: '#fff',
