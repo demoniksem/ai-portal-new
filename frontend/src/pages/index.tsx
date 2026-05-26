@@ -5,6 +5,7 @@ import type { Space, Page, PageBlock } from '../types/api';
 import ThemeToggle from '../components/ThemeToggle';
 import AIAssistant from '../components/AIAssistant';
 import NotificationPanel from '../components/NotificationPanel';
+import SettingsModal from '../components/SettingsModal';
 import {
   SquaresFour, Bell, MagnifyingGlass, FileText, Sparkle, Gear, Robot,
   CaretDown, CaretRight, Trash, MagicWand, Rocket, PaperPlaneTilt, CircleNotch,
@@ -978,60 +979,37 @@ function PageEditor({ page }: PageEditorProps) {
 // ============ BUILD PANEL ============
 
 function BuildPanel() {
-  const { loadPages, addToast, setPreviewPage } = useApp();
+  const { loadPages, addToast, selectPage, selectedSpace, spaces } = useApp();
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<Page | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const handleBuild = async () => {
     const token = getToken();
     if (!token) { window.location.href = '/login'; return; }
     if (!prompt.trim()) return;
+    const spaceId = selectedSpace ?? spaces[0]?.id;
+    if (!spaceId) { addToast('Сначала создайте пространство', 'warning'); return; }
     setLoading(true);
     try {
-      const result = await api('POST', '/api/ai/build', { prompt }, token) as unknown as Page;
-      setPreview(result);
-      setSaved(false);
-      setPreviewPage(result);
-      addToast('Страница сгенерирована!', 'success');
-    } catch (e) { addToast('Ошибка: ' + (e as Error).message, 'error'); }
-    finally { setLoading(false); }
-  };
-
-  const handleSave = async () => {
-    if (!preview) return;
-    const token = getToken();
-    if (!token) return;
-    try {
-      await api('POST', '/api/pages', {
-        title: preview.title || 'Без названия',
-        content: preview.content || [],
-        spaceId: 1,
-        acl: { readers: ['all'] }
-      }, token);
-      setSaved(true);
-      addToast('Страница сохранена!', 'success');
+      const spec = await api('POST', '/api/ai/build', { prompt }, token) as unknown as Page;
+      const created = await api('POST', '/api/pages', {
+        title: spec.title || 'Без названия',
+        content: spec.content || [],
+        spaceId,
+        acl: { readers: ['all'] },
+      }, token) as unknown as Page;
+      addToast('Страница создана', 'success');
+      setPrompt('');
       await loadPages();
-      setTimeout(() => { setPreview(null); setPrompt(''); setSaved(false); setPreviewPage(null); }, 1500);
-    } catch (e) { addToast('Ошибка сохранения: ' + (e as Error).message, 'error'); }
+      selectPage(created);
+    } catch (e) {
+      const msg = (e as Error).message || '';
+      const denied = msg.includes('Forbidden') || msg.includes('permission');
+      addToast(denied ? 'Недостаточно прав для создания страниц' : 'Ошибка: ' + msg, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
-
-  if (preview) {
-    return (
-      <div style={R.viewer}>
-        <div style={R.viewerHeader}>
-          <h1 style={R.pageTitle}>{preview.title || 'Результат'}</h1>
-          <div style={R.meta}>Предпросмотр - ещё не сохранено</div>
-        </div>
-        {(preview.content || []).map((b, i) => renderBlock({ block: b, index: i }))}
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          <button style={R.btnSave} onClick={handleSave} disabled={saved}>{saved ? 'Сохранено' : 'Сохранить'}</button>
-          <button style={R.btnOutline} onClick={() => { setPreview(null); setPrompt(''); setPreviewPage(null); }}>Отменить</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={R.centered}>
@@ -1085,8 +1063,7 @@ function Welcome() {
 // ============ MAIN CONTENT ============
 
 function MainContent() {
-  const { selectedPage, editMode, directEditMode, showSettings } = useApp();
-  if (showSettings) return <div />; // Settings handled elsewhere
+  const { selectedPage, editMode, directEditMode } = useApp();
   if (editMode && selectedPage) return <AIEditor page={selectedPage} />;
   if (directEditMode && selectedPage) return <PageEditor page={selectedPage} />;
   if (selectedPage) return <PageViewer page={selectedPage} />;
@@ -1106,6 +1083,24 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
   if (!displayPage) return null;
 
   const [showSidebar, setShowSidebar] = useState(true);
+  const { loadPages, addToast, setSelectedPage } = useApp();
+
+  const handleDelete = async () => {
+    if (!page) return; // only real (saved) pages, never a preview
+    if (!confirm(`Удалить страницу «${page.title}»?`)) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      await api('DELETE', `/api/pages/${page.id}`, null, token);
+      addToast('Страница удалена', 'success');
+      setSelectedPage(null);
+      await loadPages();
+    } catch (e) {
+      const msg = (e as Error).message || '';
+      const denied = msg.includes('Forbidden') || msg.includes('permission');
+      addToast(denied ? 'Недостаточно прав для удаления' : 'Ошибка: ' + msg, 'error');
+    }
+  };
 
   const content = asArray<PageBlock>(displayPage?.content);
   const headings = content.filter(b => b.type === 'heading');
@@ -1192,7 +1187,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Копирование страницы — в разработке')}><Copy size={16} weight="duotone" />Копировать страницу</button>
               <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Экспорт — в разработке')}><FileArrowDown size={16} weight="duotone" />Экспорт в PDF</button>
-              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Удаление — в разработке')}><Trash size={16} weight="duotone" />Удалить</button>
+              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: 8 }} onClick={handleDelete}><Trash size={16} weight="duotone" />Удалить</button>
             </div>
           </div>
         </aside>
@@ -1253,6 +1248,7 @@ interface AppContextValue {
   setPages: React.Dispatch<React.SetStateAction<Page[]>>;
   selectedSpace: number | null;
   selectedPage: Page | null;
+  setSelectedPage: React.Dispatch<React.SetStateAction<Page | null>>;
   sidebarSearch: string;
   setSidebarSearch: React.Dispatch<React.SetStateAction<string>>;
   editMode: boolean;
@@ -1329,7 +1325,7 @@ export default function Home() {
   useEffect(() => { if (selectedSpace) loadPages(); else setPages([]); }, [selectedSpace, loadPages]);
 
   const contextValue: AppContextValue = {
-    spaces, setSpaces, pages, setPages, selectedSpace, selectedPage, sidebarSearch, setSidebarSearch,
+    spaces, setSpaces, pages, setPages, selectedSpace, selectedPage, setSelectedPage, sidebarSearch, setSidebarSearch,
     editMode, setEditMode, directEditMode, setDirectEditMode,
     previewPage, setPreviewPage, selectSpace, selectPage,
     loadSpaces, loadPages, addToast, showSettings, setShowSettings, showAIAssistant, setShowAIAssistant,
@@ -1373,6 +1369,7 @@ export default function Home() {
         {showNotificationPanel && (
           <NotificationPanel onClose={() => setShowNotificationPanel(false)} />
         )}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </div>
     </AppContext.Provider>
   );
