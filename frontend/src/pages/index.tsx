@@ -1083,6 +1083,24 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
   if (!displayPage) return null;
 
   const [showSidebar, setShowSidebar] = useState(true);
+  const { loadPages, addToast, setSelectedPage } = useApp();
+
+  const handleDelete = async () => {
+    if (!page) return; // only real (saved) pages, never a preview
+    if (!confirm(`Удалить страницу «${page.title}»?`)) return;
+    const token = getToken();
+    if (!token) return;
+    try {
+      await api('DELETE', `/api/pages/${page.id}`, null, token);
+      addToast('Страница удалена', 'success');
+      setSelectedPage(null);
+      await loadPages();
+    } catch (e) {
+      const msg = (e as Error).message || '';
+      const denied = msg.includes('Forbidden') || msg.includes('permission');
+      addToast(denied ? 'Недостаточно прав для удаления' : 'Ошибка: ' + msg, 'error');
+    }
+  };
 
   const content = asArray<PageBlock>(displayPage?.content);
   const headings = content.filter(b => b.type === 'heading');
@@ -1169,7 +1187,7 @@ function RightSidebar({ page, previewPage, spaces }: RightSidebarProps) {
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Копирование страницы — в разработке')}><Copy size={16} weight="duotone" />Копировать страницу</button>
               <button style={{ ...sidebarBtnStyle, display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Экспорт — в разработке')}><FileArrowDown size={16} weight="duotone" />Экспорт в PDF</button>
-              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: 8 }} onClick={() => alert('Удаление — в разработке')}><Trash size={16} weight="duotone" />Удалить</button>
+              <button style={{ ...sidebarBtnStyle, color: '#ef4444', borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: 8 }} onClick={handleDelete}><Trash size={16} weight="duotone" />Удалить</button>
             </div>
           </div>
         </aside>
@@ -1230,6 +1248,7 @@ interface AppContextValue {
   setPages: React.Dispatch<React.SetStateAction<Page[]>>;
   selectedSpace: number | null;
   selectedPage: Page | null;
+  setSelectedPage: React.Dispatch<React.SetStateAction<Page | null>>;
   sidebarSearch: string;
   setSidebarSearch: React.Dispatch<React.SetStateAction<string>>;
   editMode: boolean;
@@ -1306,7 +1325,7 @@ export default function Home() {
   useEffect(() => { if (selectedSpace) loadPages(); else setPages([]); }, [selectedSpace, loadPages]);
 
   const contextValue: AppContextValue = {
-    spaces, setSpaces, pages, setPages, selectedSpace, selectedPage, sidebarSearch, setSidebarSearch,
+    spaces, setSpaces, pages, setPages, selectedSpace, selectedPage, setSelectedPage, sidebarSearch, setSidebarSearch,
     editMode, setEditMode, directEditMode, setDirectEditMode,
     previewPage, setPreviewPage, selectSpace, selectPage,
     loadSpaces, loadPages, addToast, showSettings, setShowSettings, showAIAssistant, setShowAIAssistant,
